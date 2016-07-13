@@ -33,6 +33,7 @@ package com.marpies.ane.onesignal {
         /* Event codes */
 
         /* Misc */
+        private static var mInitialized:Boolean;
         private static var mLogEnabled:Boolean;
         private static const iOS:Boolean = Capabilities.manufacturer.indexOf( "iOS" ) > -1;
         private static const ANDROID:Boolean = Capabilities.manufacturer.indexOf( "Android" ) > -1;
@@ -64,13 +65,12 @@ package com.marpies.ane.onesignal {
          */
         public static function init( oneSignalAppID:String, autoRegister:Boolean = false, showLogs:Boolean = false ):Boolean {
             if( !isSupported ) return false;
-            if( mContext !== null ) return true;
+            if( mInitialized ) return true;
 
             mLogEnabled = showLogs;
 
             /* Initialize context */
-            mContext = ExtensionContext.createExtensionContext( EXTENSION_ID, null );
-            if( !mContext ) {
+            if( !initExtensionContext() ) {
                 log( "Error creating extension context for " + EXTENSION_ID );
                 return false;
             }
@@ -80,6 +80,8 @@ package com.marpies.ane.onesignal {
 
             /* Call init */
             mContext.call( "init", oneSignalAppID, autoRegister, showLogs );
+
+            mInitialized = true;
             return true;
         }
 
@@ -104,8 +106,23 @@ package com.marpies.ane.onesignal {
          *
          */
 
+        /**
+         * Version of the native OneSignal SDK.
+         */
+        public static function get sdkVersion():String {
+            if( !isSupported ) return null;
+            if( !mInitialized && !initExtensionContext() ) {
+                return null;
+            }
+
+            return mContext.call( "sdkVersion" ) as String;
+        }
+
+        /**
+         * Extension version.
+         */
         public static function get version():String {
-            return "0.0.1";
+            return "0.0.2";
         }
 
         /**
@@ -122,6 +139,17 @@ package com.marpies.ane.onesignal {
          *
          *
          */
+
+        /**
+         * Initializes extension context.
+         * @return <code>true</code> if initialized successfully, <code>false</code> otherwise.
+         */
+        private static function initExtensionContext():Boolean {
+            if( mContext === null ) {
+                mContext = ExtensionContext.createExtensionContext( EXTENSION_ID, null );
+            }
+            return mContext !== null;
+        }
 
         private static function validateExtensionContext():void {
             if( !mContext ) throw new Error( "OneSignal extension was not initialized. Call init() first." );

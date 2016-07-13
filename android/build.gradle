@@ -1,0 +1,50 @@
+
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:2.1.+'
+    }
+}
+
+
+apply plugin: 'com.android.library'
+
+dependencies {
+    compile files('libs/FlashRuntimeExtensions.jar')
+    compile files('libs/OneSignalSDK.jar')
+    compile files('libs/android-support-v4.jar')
+}
+
+android {
+    defaultConfig {
+        minSdkVersion 14
+        targetSdkVersion 23
+    }
+    compileSdkVersion 23
+    buildToolsVersion "23.0.3"
+    
+    lintOptions {
+        abortOnError false
+    }
+
+    sourceSets {
+        main {
+            manifest {
+                srcFile 'AndroidManifest.xml'
+            }
+            java {
+                srcDir 'src'
+            }
+            res {
+                srcDir 'com.marpies.ane.onesignal-res'
+            }
+        }
+    }
+}
+
+
+
+

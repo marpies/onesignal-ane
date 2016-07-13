@@ -27,23 +27,26 @@ public class OneSignalListener implements OneSignal.NotificationOpenedHandler, O
 
 	@Override
 	public void notificationOpened( String message, JSONObject additionalData, boolean isActive ) {
+		/* Response dispatched to AIR */
+		JSONObject response = new JSONObject();
 		AIR.log( "OneSignalListener::notificationOpened" );
-		AIR.log( "Message: " + message );
-		AIR.log( "isActive: " + isActive );
 		if( additionalData != null ) {
-			AIR.log( "Has additional data" );
 			Iterator<String> it = additionalData.keys();
 			while( it.hasNext() ) {
 				String key = it.next();
 				try {
-					AIR.log( "\t" + key + " -> " + additionalData.get( key ) );
+					/* Build response JSON from the additionalData */
+					addValueForKey( response, key, additionalData.get( key ) );
 				} catch( JSONException e ) {
 					e.printStackTrace();
 				}
 			}
-		} else {
-			AIR.log( "No additional data" );
 		}
+
+		addValueForKey( response, "message", message );
+		addValueForKey( response, "isActive", isActive );
+
+		AIR.dispatchEvent( OneSignalEvent.NOTIFICATION_RECEIVED, response.toString() );
 	}
 
 	@Override
@@ -55,7 +58,7 @@ public class OneSignalListener implements OneSignal.NotificationOpenedHandler, O
 		AIR.dispatchEvent( OneSignalEvent.TOKEN_RECEIVED, response.toString() );
 	}
 
-	private void addValueForKey( JSONObject json, String key, String value ) {
+	private void addValueForKey( JSONObject json, String key, Object value ) {
 		if( value != null ) {
 			try {
 				json.put( key, value );

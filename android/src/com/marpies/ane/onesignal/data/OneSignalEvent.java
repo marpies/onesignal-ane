@@ -19,5 +19,6 @@ package com.marpies.ane.onesignal.data;
 public class OneSignalEvent {
 
 	public static final String TOKEN_RECEIVED = "tokenReceived";
+	public static final String NOTIFICATION_RECEIVED = "notificationReceived";
 
 }

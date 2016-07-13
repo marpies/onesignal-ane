@@ -16,12 +16,9 @@
 
 package com.marpies.ane.onesignal {
 
-    import flash.desktop.NativeApplication;
-    import flash.events.InvokeEvent;
     import flash.events.StatusEvent;
     import flash.external.ExtensionContext;
     import flash.system.Capabilities;
-    import flash.utils.Dictionary;
 
     public class OneSignal {
 
@@ -31,6 +28,10 @@ package com.marpies.ane.onesignal {
         private static var mContext:ExtensionContext;
 
         /* Event codes */
+        private static const TOKEN_RECEIVED:String = "tokenReceived";
+
+        /* Callbacks */
+        private static var mTokenListeners:Vector.<Function> = new <Function>[];
 
         /* Misc */
         private static var mInitialized:Boolean;
@@ -83,6 +84,44 @@ package com.marpies.ane.onesignal {
 
             mInitialized = true;
             return true;
+        }
+
+        /**
+         * Adds callback that will be called when user registers for notifications and push token is received.
+         * @param callback Function with the following signature:
+         * <listing version="3.0">
+         * function callback( oneSignalUserId:String, pushToken:String ):void {
+         *    // pushToken may be null if there's an error (server side, connection error...)
+         * };
+         * </listing>
+         *
+         * @see #removeTokenReceivedCallback
+         */
+        public static function addTokenReceivedCallback( callback:Function ):void {
+            if( !isSupported ) return;
+
+            if( callback === null ) throw new ArgumentError( "Parameter callback cannot be null." );
+
+            if( mTokenListeners.indexOf( callback ) < 0 ) {
+                mTokenListeners[mTokenListeners.length] = callback;
+            }
+        }
+
+        /**
+         * Removes callback that was added earlier using <code>OneSignal.addTokenReceivedCallback</code>
+         * @param callback Function to remove.
+         *
+         * @see #addTokenReceivedCallback
+         */
+        public static function removeTokenReceivedCallback( callback:Function ):void {
+            if( !isSupported ) return;
+
+            if( callback === null ) throw new ArgumentError( "Parameter callback cannot be null." );
+
+            var index:int = mTokenListeners.indexOf( callback );
+            if( index >= 0 ) {
+                mTokenListeners.removeAt( index );
+            }
         }
 
         /**
@@ -156,7 +195,16 @@ package com.marpies.ane.onesignal {
         }
 
         private static function onStatus( event:StatusEvent ):void {
-
+            var responseJSON:Object = null;
+            switch( event.code ) {
+                case TOKEN_RECEIVED:
+                    responseJSON = JSON.parse( event.level );
+                    var length:int = mTokenListeners.length;
+                    for( var i:int = 0; i < length; ++i ) {
+                        mTokenListeners[i]( responseJSON.userId, responseJSON.pushToken );
+                    }
+                    return;
+            }
         }
 
         private static function log( message:String ):void {

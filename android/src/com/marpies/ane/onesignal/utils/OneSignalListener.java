@@ -16,6 +16,7 @@
 
 package com.marpies.ane.onesignal.utils;
 
+import com.marpies.ane.onesignal.data.OneSignalEvent;
 import com.onesignal.OneSignal;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -48,6 +49,20 @@ public class OneSignalListener implements OneSignal.NotificationOpenedHandler, O
 	@Override
 	public void idsAvailable( String userId, String pushToken ) {
 		AIR.log( "OneSignalListener::idsAvailable " + userId + " | pushToken: " + pushToken );
+		JSONObject response = new JSONObject();
+		addValueForKey( response, "userId", userId );
+		addValueForKey( response, "pushToken", pushToken );
+		AIR.dispatchEvent( OneSignalEvent.TOKEN_RECEIVED, response.toString() );
+	}
+
+	private void addValueForKey( JSONObject json, String key, String value ) {
+		if( value != null ) {
+			try {
+				json.put( key, value );
+			} catch( JSONException e ) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 }

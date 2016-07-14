@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-#import <Foundation/Foundation.h>
-#import <AIRExtHelpers/MPUIApplicationListener.h>
+#import "SetSubscriptionFunction.h"
+#import <AIRExtHelpers/MPFREObjectUtils.h>
+#import <OneSignal/OneSignal.h>
+#import "AIROneSignal.h"
 
-@interface OneSignalUIAppDelegate : NSObject<MPUIApplicationListener>
-
-- (id) initWithOneSignalAppId:(NSString*) oneSignalAppId autoRegister:(BOOL) autoRegister;
-- (void) registerForPushNotifications;
-- (void) setSubscription:(BOOL) subscription;
-
-@end
+FREObject pushos_setSubscription( FREContext context, void* functionData, uint32_t argc, FREObject argv[] ) {
+    BOOL subscribe = [MPFREObjectUtils getBOOL:argv[0]];
+    [AIROneSignal log:[NSString stringWithFormat:@"pushos_setSubscription %i", subscribe]];
+    [[[AIROneSignal sharedInstance] appDelegate] setSubscription:subscribe];
+    return nil;
+}

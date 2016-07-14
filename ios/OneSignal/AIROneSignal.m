@@ -18,6 +18,7 @@
 #import "Functions/InitFunction.h"
 #import "Functions/RegisterFunction.h"
 #import "Functions/GetSDKVersionFunction.h"
+#import "Functions/SetSubscriptionFunction.h"
 
 static BOOL AIROneSignalLogEnabled = NO;
 FREContext AIROneSignalExtContext = nil;
@@ -66,7 +67,8 @@ static AIROneSignal* AIROneSignalSharedInstance = nil;
 FRENamedFunction AIROneSignal_extFunctions[] = {
     { (const uint8_t*) "init",            0, pushos_init },
     { (const uint8_t*) "register",        0, pushos_register },
-    { (const uint8_t*) "sdkVersion",      0, pushos_sdkVersion }
+    { (const uint8_t*) "sdkVersion",      0, pushos_sdkVersion },
+    { (const uint8_t*) "setSubscription", 0, pushos_setSubscription }
 };
 
 void OneSignalContextInitializer( void* extData, const uint8_t* ctxType, FREContext ctx, uint32_t* numFunctionsToSet, const FRENamedFunction** functionsToSet ) {

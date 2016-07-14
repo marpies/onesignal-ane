@@ -59,6 +59,10 @@
     }
 }
 
+- (void) setSubscription:(BOOL) subscription {
+    [mOneSignal setSubscription:subscription];
+}
+
 - (void) addTokenCallback {
     [mOneSignal IdsAvailable:^(NSString *userId, NSString *pushToken) {
         [AIROneSignal log:[NSString stringWithFormat:@"OneSignal::idsAvailable %@ | token: %@", userId, pushToken]];

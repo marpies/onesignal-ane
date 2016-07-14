@@ -228,7 +228,7 @@ package com.marpies.ane.onesignal {
          * Extension version.
          */
         public static function get version():String {
-            return "0.0.2";
+            return "0.1.0";
         }
 
         /**
@@ -236,6 +236,15 @@ package com.marpies.ane.onesignal {
          */
         public static function get isSupported():Boolean {
             return iOS || ANDROID;
+        }
+
+        /**
+         * Returns <code>true</code> if <code>OneSignal.init()</code> has been executed successfully.
+         *
+         * @see #init
+         */
+        public static function get isInitialized():Boolean {
+            return mInitialized;
         }
 
         /**

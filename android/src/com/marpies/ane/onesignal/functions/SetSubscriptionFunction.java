@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2016 Marcel Piestansky (http://marpies.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,31 +14,27 @@
  * limitations under the License.
  */
 
-package com.marpies.ane.onesignal;
+package com.marpies.ane.onesignal.functions;
 
 import com.adobe.fre.FREContext;
-import com.adobe.fre.FREFunction;
-import com.marpies.ane.onesignal.functions.*;
+import com.adobe.fre.FREObject;
 import com.marpies.ane.onesignal.utils.AIR;
+import com.marpies.ane.onesignal.utils.FREObjectUtils;
+import com.onesignal.OneSignal;
 
-import java.util.HashMap;
-import java.util.Map;
-
-public class OneSignalExtensionContext extends FREContext {
-
-	@Override
-	public Map<String, FREFunction> getFunctions() {
-		Map<String, FREFunction> functions = new HashMap<String, FREFunction>();
-
-		functions.put( "init", new InitFunction() );
-		functions.put( "sdkVersion", new GetSDKVersionFunction() );
-		functions.put( "setSubscription", new SetSubscriptionFunction() );
-
-		return functions;
-	}
+public class SetSubscriptionFunction extends BaseFunction {
 
 	@Override
-	public void dispose() {
-		AIR.setContext( null );
+	public FREObject call( FREContext context, FREObject[] args ) {
+		super.call( context, args );
+
+		boolean subscribe = FREObjectUtils.getBoolean( args[0] );
+
+		AIR.log( "OneSignal::setSubscription " + subscribe );
+		OneSignal.setSubscription( subscribe );
+
+		return null;
 	}
+
 }
+

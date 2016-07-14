@@ -89,6 +89,18 @@ package com.marpies.ane.onesignal {
         }
 
         /**
+         * You can call this method with <code>false</code> to opt users out of receiving all notifications
+         * through OneSignal. You can pass <code>true</code> later to opt users back into notifications.
+         * Extension must be initialized using <code>OneSignal.init()</code> before calling this method.
+         */
+        public static function setSubscription( value:Boolean ):void {
+            if( !isSupported ) return;
+            validateExtensionContext();
+
+            mContext.call( "setSubscription", value );
+        }
+
+        /**
          * Adds callback that will be called when user registers for notifications and push token is received.
          * @param callback Function with the following signature:
          * <listing version="3.0">

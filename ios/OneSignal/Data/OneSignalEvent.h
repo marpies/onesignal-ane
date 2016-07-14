@@ -20,5 +20,6 @@
 #import <Foundation/Foundation.h>
 
 static const NSString* OS_TOKEN_RECEIVED = @"tokenReceived";
+static const NSString* OS_NOTIFICATION_RECEIVED = @"notificationReceived";
 
 #endif /* OneSignalEvent_h */

@@ -18,7 +18,6 @@
 #import "InitFunction.h"
 #import "OneSignalUIAppDelegate.h"
 #import <AIRExtHelpers/MPFREObjectUtils.h>
-#import <AIRExtHelpers/MPUIApplicationDelegate.h>
 #import <OneSignal/OneSignal.h>
 
 FREObject pushos_init( FREContext context, void* functionData, uint32_t argc, FREObject argv[] ) {
@@ -30,11 +29,13 @@ FREObject pushos_init( FREContext context, void* functionData, uint32_t argc, FR
     BOOL showLogs = [MPFREObjectUtils getBOOL:argv[2]];
     
     [AIROneSignal showLogs:showLogs];
+    if( showLogs ) {
+        [OneSignal setLogLevel:ONE_S_LL_DEBUG visualLevel:ONE_S_LL_NONE];
+    }
     
     [AIROneSignal log:@"pushos_init"];
     /* Initialize delegate */
-    OneSignalUIAppDelegate* delegate = [[OneSignalUIAppDelegate alloc] initWithOneSignalAppId:oneSignalAppId andAutoRegister:autoRegister];
-    [[MPUIApplicationDelegate sharedInstance] addListener:delegate];
+    OneSignalUIAppDelegate* delegate = [[OneSignalUIAppDelegate alloc] initWithOneSignalAppId:oneSignalAppId autoRegister:autoRegister];
     [[AIROneSignal sharedInstance] setAppDelegate:delegate];
     return nil;
 }

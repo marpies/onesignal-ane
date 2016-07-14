@@ -24,7 +24,7 @@
     OneSignal* mOneSignal;
 }
 
-- (id) initWithOneSignalAppId:(NSString*) oneSignalAppId andAutoRegister:(BOOL) autoRegister {
+- (id) initWithOneSignalAppId:(NSString*) oneSignalAppId autoRegister:(BOOL) autoRegister {
     self = [super init];
     if( self ) {
         if( !autoRegister ) {

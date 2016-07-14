@@ -18,6 +18,8 @@
 #import "AIROneSignal.h"
 #import <OneSignal/OneSignal.h>
 #import <AIRExtHelpers/MPUIApplicationDelegate.h>
+#import <AIRExtHelpers/MPStringUtils.h>
+#import "OneSignalEvent.h"
 
 @implementation OneSignalUIAppDelegate {
     BOOL mHasRegistered;
@@ -34,6 +36,10 @@
         mOneSignal = [[OneSignal alloc] initWithLaunchOptions:[MPUIApplicationDelegate launchOptions] appId:oneSignalAppId handleNotification:^(NSString *message, NSDictionary *additionalData, BOOL isActive) {
             //
         } autoRegister:autoRegister];
+        
+        if( autoRegister ) {
+            [self addTokenCallback];
+        }
     }
     return self;
 }
@@ -47,4 +53,19 @@
         [AIROneSignal log:@"User has already registered for push notifications, ignoring."];
     }
 }
+
+- (void) addTokenCallback {
+    [mOneSignal IdsAvailable:^(NSString *userId, NSString *pushToken) {
+        [AIROneSignal log:[NSString stringWithFormat:@"OneSignal::idsAvailable %@ | token: %@", userId, pushToken]];
+        NSMutableDictionary* response = [NSMutableDictionary dictionary];
+        if( userId != nil ) {
+            response[@"userId"] = userId;
+        }
+        if( pushToken != nil ) {
+            response[@"pushToken"] = pushToken;
+        }
+        [AIROneSignal dispatchEvent:OS_TOKEN_RECEIVED withMessage:[MPStringUtils getJSONString:response]];
+    }];
+}
+
 @end

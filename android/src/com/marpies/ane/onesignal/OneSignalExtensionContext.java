@@ -33,6 +33,7 @@ public class OneSignalExtensionContext extends FREContext {
 		functions.put( "init", new InitFunction() );
 		functions.put( "sdkVersion", new GetSDKVersionFunction() );
 		functions.put( "setSubscription", new SetSubscriptionFunction() );
+		functions.put( "register", new RegisterFunction() );
 
 		return functions;
 	}

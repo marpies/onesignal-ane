@@ -89,6 +89,20 @@ package com.marpies.ane.onesignal {
         }
 
         /**
+         * <strong>(iOS only)</strong> - Call this method when you want to prompt the user to accept push notifications.
+         * Android devices automatically register silently during initialization.
+         *
+         * <p>Extension must be initialized using <code>OneSignal.init()</code> with <code>autoRegister</code>
+         * parameter set to <code>false</code> before calling this method.</p>
+         */
+        public static function register():void {
+            if( !isSupported ) return;
+            validateExtensionContext();
+
+            mContext.call( "register" );
+        }
+
+        /**
          * You can call this method with <code>false</code> to opt users out of receiving all notifications
          * through OneSignal. You can pass <code>true</code> later to opt users back into notifications.
          * Extension must be initialized using <code>OneSignal.init()</code> before calling this method.

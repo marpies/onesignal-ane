@@ -29,9 +29,11 @@ package com.marpies.ane.onesignal {
 
         /* Event codes */
         private static const TOKEN_RECEIVED:String = "tokenReceived";
+        private static const NOTIFICATION_RECEIVED:String = "notificationReceived";
 
         /* Callbacks */
-        private static var mTokenListeners:Vector.<Function> = new <Function>[];
+        private static var mTokenCallbacks:Vector.<Function> = new <Function>[];
+        private static var mNotificationCallbacks:Vector.<Function> = new <Function>[];
 
         /* Misc */
         private static var mInitialized:Boolean;
@@ -102,8 +104,8 @@ package com.marpies.ane.onesignal {
 
             if( callback === null ) throw new ArgumentError( "Parameter callback cannot be null." );
 
-            if( mTokenListeners.indexOf( callback ) < 0 ) {
-                mTokenListeners[mTokenListeners.length] = callback;
+            if( mTokenCallbacks.indexOf( callback ) < 0 ) {
+                mTokenCallbacks[mTokenCallbacks.length] = callback;
             }
         }
 
@@ -118,9 +120,48 @@ package com.marpies.ane.onesignal {
 
             if( callback === null ) throw new ArgumentError( "Parameter callback cannot be null." );
 
-            var index:int = mTokenListeners.indexOf( callback );
+            var index:int = mTokenCallbacks.indexOf( callback );
             if( index >= 0 ) {
-                mTokenListeners.removeAt( index );
+                mTokenCallbacks.removeAt( index );
+            }
+        }
+
+        /**
+         * Adds callback that will be called when user taps a notification
+         * or when notification is received while the app is in foreground.
+         * @param callback Function with the following signature:
+         * <listing version="3.0">
+         * function callback( notification:OneSignalNotification ):void {
+         *
+         * };
+         * </listing>
+         *
+         * @see #removeNotificationReceivedCallback
+         */
+        public static function addNotificationReceivedCallback( callback:Function ):void {
+            if( !isSupported ) return;
+
+            if( callback === null ) throw new ArgumentError( "Parameter callback cannot be null." );
+
+            if( mNotificationCallbacks.indexOf( callback ) < 0 ) {
+                mNotificationCallbacks[mNotificationCallbacks.length] = callback;
+            }
+        }
+
+        /**
+         * Removes callback that was added earlier using <code>OneSignal.addNotificationReceivedCallback</code>
+         * @param callback Function to remove.
+         *
+         * @see #addNotificationReceivedCallback
+         */
+        public static function removeNotificationReceivedCallback( callback:Function ):void {
+            if( !isSupported ) return;
+
+            if( callback === null ) throw new ArgumentError( "Parameter callback cannot be null." );
+
+            var index:int = mNotificationCallbacks.indexOf( callback );
+            if( index >= 0 ) {
+                mNotificationCallbacks.removeAt( index );
             }
         }
 
@@ -196,12 +237,21 @@ package com.marpies.ane.onesignal {
 
         private static function onStatus( event:StatusEvent ):void {
             var responseJSON:Object = null;
+            var i:int;
+            var length:int;
             switch( event.code ) {
                 case TOKEN_RECEIVED:
                     responseJSON = JSON.parse( event.level );
-                    var length:int = mTokenListeners.length;
-                    for( var i:int = 0; i < length; ++i ) {
-                        mTokenListeners[i]( responseJSON.userId, responseJSON.pushToken );
+                    length = mTokenCallbacks.length;
+                    for( i = 0; i < length; ++i ) {
+                        mTokenCallbacks[i]( responseJSON.userId, responseJSON.pushToken );
+                    }
+                    return;
+                case NOTIFICATION_RECEIVED:
+                    responseJSON = JSON.parse( event.level );
+                    length = mNotificationCallbacks.length;
+                    for( i = 0; i < length; ++i ) {
+                        mNotificationCallbacks[i]( OneSignalNotification.fromJSON( responseJSON ) );
                     }
                     return;
             }

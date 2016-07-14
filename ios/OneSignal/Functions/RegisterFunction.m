@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-#import <Foundation/Foundation.h>
-#import <AIRExtHelpers/MPUIApplicationListener.h>
+#import "RegisterFunction.h"
+#import <AIRExtHelpers/MPFREObjectUtils.h>
+#import "AIROneSignal.h"
 
-@interface OneSignalUIAppDelegate : NSObject<MPUIApplicationListener>
-
-- (id) initWithOneSignalAppId:(NSString*) oneSignalAppId andAutoRegister:(BOOL) autoRegister;
-- (void) registerForPushNotifications;
-
-@end
+FREObject pushos_register( FREContext context, void* functionData, uint32_t argc, FREObject argv[] ) {
+    [AIROneSignal log:@"pushos_register"];
+    [[[AIROneSignal sharedInstance] appDelegate] registerForPushNotifications];
+    return nil;
+}

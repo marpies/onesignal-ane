@@ -20,6 +20,7 @@
 #import <AIRExtHelpers/MPUIApplicationDelegate.h>
 
 @implementation OneSignalUIAppDelegate {
+    BOOL mHasRegistered;
     OneSignal* mOneSignal;
 }
 
@@ -29,6 +30,7 @@
         if( !autoRegister ) {
             [AIROneSignal log:@"Auto register is disabled"];
         }
+        mHasRegistered = autoRegister;
         mOneSignal = [[OneSignal alloc] initWithLaunchOptions:[MPUIApplicationDelegate launchOptions] appId:oneSignalAppId handleNotification:^(NSString *message, NSDictionary *additionalData, BOOL isActive) {
             //
         } autoRegister:autoRegister];
@@ -36,4 +38,13 @@
     return self;
 }
 
+- (void) registerForPushNotifications {
+    if( !mHasRegistered ) {
+        mHasRegistered = YES;
+        [mOneSignal registerForPushNotifications];
+        [self addTokenCallback];
+    } else {
+        [AIROneSignal log:@"User has already registered for push notifications, ignoring."];
+    }
+}
 @end

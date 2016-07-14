@@ -1,0 +1,14 @@
+<platform xmlns="http://ns.adobe.com/air/extension/20.0">
+
+	<packagedDependencies>
+        <packagedDependency>OneSignalSDK.jar</packagedDependency>
+    </packagedDependencies> 
+
+    <packagedResources>
+        <packagedResource> 
+            <packageName>com.marpies.ane.onesignal</packageName> 
+            <folderName>com.marpies.ane.onesignal-res</folderName> 
+        </packagedResource>
+    </packagedResources>
+
+</platform>

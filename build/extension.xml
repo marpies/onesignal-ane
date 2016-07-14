@@ -1,0 +1,33 @@
+<extension xmlns="http://ns.adobe.com/air/extension/20.0">
+  <id>com.marpies.ane.onesignal</id>
+  <versionNumber>0.1.0</versionNumber>
+  <platforms>
+    <platform name="iPhone-ARM">
+        <applicationDeployment>
+            <nativeLibrary>libOneSignal.a</nativeLibrary>
+            <initializer>OneSignalInitializer</initializer>
+            <finalizer>OneSignalFinalizer</finalizer>
+        </applicationDeployment>
+    </platform>
+
+    <platform name="Android-ARM">
+        <applicationDeployment>
+            <nativeLibrary>libOneSignal.jar</nativeLibrary>
+            <initializer>com.marpies.ane.onesignal.OneSignalExtension</initializer>
+            <finalizer>com.marpies.ane.onesignal.OneSignalExtension</finalizer>
+        </applicationDeployment>
+    </platform>
+
+    <platform name="Android-x86">
+        <applicationDeployment>
+            <nativeLibrary>libOneSignal.jar</nativeLibrary>
+            <initializer>com.marpies.ane.onesignal.OneSignalExtension</initializer>
+            <finalizer>com.marpies.ane.onesignal.OneSignalExtension</finalizer>
+        </applicationDeployment>
+    </platform>
+
+    <platform name="default">
+        <applicationDeployment/>
+    </platform>
+  </platforms>
+</extension>

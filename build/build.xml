@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="OneSignal build scripts" default="all">
+
+    <!-- Config -->
+    <property file="build.properties"/>
+
+    <!-- All -->
+    <target name="all" depends="swc,ios,android,package" description="Full build of extension"/>
+
+    <!--
+
+    ================================================================
+                                        iOS
+    ================================================================
+
+    -->
+    <target name="ios" description="Build iOS Library">
+
+        <!-- make the build directory for the objc code -->
+        <mkdir dir="temp/ios/build/"/>
+
+        <!-- clean the build -->
+        <exec executable="xcodebuild" failonerror="true" dir="../ios/">
+            <arg line="-project ${name}.xcodeproj"/>
+            <arg line="-alltargets clean"/>
+        </exec>
+
+        <!-- compile the ios lib -->
+        <exec executable="xcodebuild" failonerror="true" dir="../ios/">
+            <arg line="-project ${name}.xcodeproj"/>
+            <arg line="-sdk ${ios.sdkversion}"/>
+            <arg line="-alltargets"/>
+            <arg line="-configuration Release"/>
+            <arg line="SYMROOT=../build/temp/ios/build/"/>
+        </exec>
+
+        <!-- copy the ios lib to the base temp ios directory -->
+        <copy file="temp/ios/build/Release-iphoneos/lib${name}.a" todir="temp/ios" overwrite="true"/>
+        
+        <!-- Copy over required frameworks and libs -->
+        <copy todir="temp/ios/AIRExtHelpers.framework" overwrite="true">
+            <fileset dir="../ios/OneSignal/Frameworks/AIRExtHelpers.framework"/>
+        </copy>
+        <copy todir="temp/ios/OneSignal.framework" overwrite="true">
+            <fileset dir="../ios/OneSignal/Frameworks/OneSignal.framework"/>
+        </copy>
+
+        <copy file="temp/swc/content/library.swf" todir="temp/ios" overwrite="true"/>
+        <!-- remove the build directory -->
+        <delete dir="temp/ios/build/"/>
+    </target>
+
+    <!--
+
+    ================================================================
+                                Android
+    ================================================================
+
+    -->
+    <target name="android" description="Build Android Library with debugging disabled">
+        <property name="ANDROID_TARGET" value="release"/>
+        <antcall target="android-build"/>
+    </target>
+    <target name="android-debug" description="Build Android Library with debugging enabled">
+        <property name="ANDROID_TARGET" value="debug"/>
+        <antcall target="android-build"/>
+    </target>
+    <target name="android-build" description="Build Android Library">
+        <!-- build .aar using gradle -->
+        <exec executable="${gradle.exec}" dir="../android">
+            <arg value="build" />
+            <arg line="-x lint" />
+        </exec>
+
+        <!-- unzip .aar -->
+        <mkdir dir="temp/android/aar" />
+        <unzip src="../android/build/outputs/aar/android-${ANDROID_TARGET}.aar" dest="temp/android/aar" />
+        <!-- take the .jar -->
+        <unzip src="temp/android/aar/classes.jar" dest="temp/android/aar/classes" />
+        <delete file="temp/android/aar/classes/classes.jar" />
+        <zip basedir="temp/android/aar/classes" destfile="temp/android/aar/classes/reziped.jar" />
+        <copy file="temp/android/aar/classes/reziped.jar" tofile="temp/android/lib${name}.jar" overwrite="true" />
+        <!-- remove previous resources -->
+        <delete dir="temp/android/com.marpies.ane.onesignal-res" />
+        <!-- copy resources -->
+        <copy todir="temp/android/com.marpies.ane.onesignal-res/">
+            <fileset dir="temp/android/aar/res/"/>
+        </copy>
+        <!-- Copy OneSignalSDK.jar -->
+        <copy file="../android/libs/OneSignalSDK.jar" tofile="temp/android/OneSignalSDK.jar" overwrite="true" />
+        <!-- clean up -->
+        <delete dir="temp/android/aar" />
+    </target>
+
+
+
+    <!--
+
+    ================================================================
+                            Actionscript (SWC)
+    ================================================================
+
+    -->
+    <target name="swc" description="Build SWC library">
+        <mkdir dir="temp/swc/content/"/>
+
+        <fileset dir="../actionscript/src" casesensitive="yes" id="classfiles">
+            <include name="**/*.as"/>
+        </fileset>
+
+        <pathconvert property="classlist" refid="classfiles" pathsep=" " dirsep=".">
+            <regexpmapper from=".*src.(.*)\.as" to="\1"/>
+        </pathconvert>
+
+        <exec executable="${flex.sdk}/bin/compc${bin.ext}" failonerror="true">
+            <env key="AIR_SDK_HOME" value="${flex.sdk}"/>
+            <arg line='-source-path ../actionscript/src'/>
+            <arg line='-output temp/swc/${name}.swc'/>
+            <arg line='-swf-version=26'/>
+            <arg line='-external-library-path+="${flex.sdk}/frameworks/libs/air/airglobal.swc"'/>
+            <arg line='-include-classes ${classlist}'/>
+        </exec>
+
+        <unzip src="temp/swc/${name}.swc" dest="temp/swc/content" overwrite="true"/>
+        <!-- Copy .swc to bin directory -->
+        <copy file="temp/swc/${name}.swc" tofile="../bin/${packageName}.swc" overwrite="true" />
+
+        <copy file="temp/swc/content/library.swf" todir="temp/ios" overwrite="true"/>
+        <copy file="temp/swc/content/library.swf" todir="temp/android" overwrite="true"/>
+        <copy file="temp/swc/content/library.swf" todir="temp/default" overwrite="true"/>
+    </target>
+
+    <!--
+
+    ================================================================
+                                Package
+    ================================================================
+
+    -->
+    <target name="package" description="Create the extension package">
+        <exec executable="${flex.sdk}/bin/adt${bin.ext}" failonerror="true" dir="temp/">
+            <arg value="-package"/>
+            <arg value="-target"/>
+            <arg value="ane"/>
+            <arg value="${packageName}.ane"/>
+            <arg value="../extension.xml"/>
+            <arg line="-swc swc/${name}.swc"/>
+            <arg line="-platform iPhone-ARM -platformoptions ../platform-ios.xml -C ios/ ."/>
+            <arg line="-platform Android-ARM -platformoptions ../platform-android.xml -C android/ ."/>
+            <arg line="-platform Android-x86 -platformoptions ../platform-android.xml -C android/ ."/>
+            <arg line="-platform default -C default/ ."/>
+        </exec>
+
+        <move file="temp/${packageName}.ane" todir="../bin"/>
+
+        <delete dir="temp/"/>
+    </target>
+
+
+
+    <!--
+
+    ================================================================
+                            HTML Documentation
+    ================================================================
+
+     -->
+    <target name="asdoc" description="generate the asdoc in readable html">
+        <exec executable="${flex.sdk}/bin/asdoc${bin.ext}" failonerror="false">
+            <env key="FLEX_HOME" value="${flex.sdk}"/>
+            <env key="FALCON_HOME" value="${flex.sdk}"/>
+            <arg line='-source-path ../actionscript/src'/>
+            <arg line='-doc-sources ../actionscript/src'/>
+            <arg line='-output ../docs'/>
+            <arg line='-library-path+="${flex.sdk}/frameworks/libs/air/airglobal.swc"'/>
+        </exec>
+    </target>
+
+</project>

@@ -19,6 +19,7 @@ package com.marpies.ane.onesignal {
     import flash.events.StatusEvent;
     import flash.external.ExtensionContext;
     import flash.system.Capabilities;
+    import flash.utils.Dictionary;
 
     public class OneSignal {
 
@@ -30,10 +31,13 @@ package com.marpies.ane.onesignal {
         /* Event codes */
         private static const TOKEN_RECEIVED:String = "tokenReceived";
         private static const NOTIFICATION_RECEIVED:String = "notificationReceived";
+        private static const TAGS_RECEIVED:String = "tagsReceived";
 
         /* Callbacks */
         private static var mTokenCallbacks:Vector.<Function> = new <Function>[];
         private static var mNotificationCallbacks:Vector.<Function> = new <Function>[];
+        private static var mCallbackMap:Dictionary;
+        private static var mCallbackIdCounter:int;
 
         /* Misc */
         private static var mInitialized:Boolean;
@@ -75,6 +79,7 @@ package com.marpies.ane.onesignal {
             if( !isSupported ) return false;
             if( mInitialized ) return true;
 
+            if( iOS && oneSignalAppID === null ) throw new ArgumentError( "Parameter oneSignalAppID cannot be null when targeting iOS." );
             mLogEnabled = showLogs;
 
             /* Initialize context */
@@ -83,6 +88,7 @@ package com.marpies.ane.onesignal {
                 return false;
             }
 
+            mCallbackMap = new Dictionary();
             /* Listen for native library events */
             mContext.addEventListener( StatusEvent.STATUS, onStatus );
 
@@ -117,6 +123,136 @@ package com.marpies.ane.onesignal {
             validateExtensionContext();
 
             mContext.call( "setSubscription", value );
+        }
+
+        /**
+         * Tag a user based on an app event of your choosing so later you can create
+         * segments in the OneSignal dashboard to target these users.
+         *
+         * <p>Consider using <code>OneSignal.sendTags()</code> to send more than one tag at a time.</p>
+         *
+         * <p>Extension must be initialized using <code>OneSignal.init()</code> before calling this method.</p>
+         *
+         * @param key Key of your choosing to create or update.
+         * @param value Value to set on the key. Empty <code>String</code> removes the key.
+         *
+         * @see #sendTags()
+         * @see #getTags()
+         * @see #deleteTag()
+         * @see #deleteTags()
+         */
+        public static function sendTag( key:String, value:String ):void {
+            if( !isSupported ) return;
+            validateExtensionContext();
+
+            if( key === null ) throw new ArgumentError( "Parameter key cannot be null." );
+            if( value === null ) throw new ArgumentError( "Parameter value cannot be null." );
+
+            var tag:Object = {};
+            tag[key] = value;
+            sendTags( tag );
+        }
+
+        /**
+         * Tag a user based on an app event of your choosing so later you can create
+         * segments in the OneSignal dashboard to target these users.
+         *
+         * <p>This method allows sending multiple tags at once. Consider using <code>OneSignal.sendTag()</code>
+         * to send a single tag.</p>
+         *
+         * <p>Extension must be initialized using <code>OneSignal.init()</code> before calling this method.</p>
+         *
+         * @param tags Key-value pairs of your choosing to create or update, for example:
+         * <listing version="3.0">
+         * OneSignal.sendTags( {
+         *    profession: "warrior",
+         *    area: "desert"
+         * } );
+         * </listing>
+         *
+         * @see #sendTag()
+         * @see #getTags()
+         * @see #deleteTag()
+         * @see #deleteTags()
+         */
+        public static function sendTags( tags:Object ):void {
+            if( !isSupported ) return;
+            validateExtensionContext();
+
+            if( tags === null ) throw new ArgumentError( "Parameter tags cannot be null." );
+
+            mContext.call( "sendTags", getVectorFromObject( tags ) );
+        }
+
+        /**
+         * Retrieves a list of tags that have been set on the user.
+         *
+         * <p>Extension must be initialized using <code>OneSignal.init()</code> before calling this method.</p>
+         *
+         * @param callback Function with the following signature:
+         * <listing version="3.0">
+         * function callback( tags:Object ):void {
+         *    // tags may be null if there's a connection error or user has not been tagged
+         * };
+         * </listing>
+         *
+         * @see #sendTag()
+         * @see #sendTags()
+         * @see #deleteTag()
+         * @see #deleteTags()
+         */
+        public static function getTags( callback:Function ):void {
+            if( !isSupported ) return;
+            if( callback === null ) return;
+
+            validateExtensionContext();
+
+            mContext.call( "getTags", registerCallback( callback ) );
+        }
+
+        /**
+         * Deletes a tag that was previously set on a user using <code>OneSignal.sendTag()</code> or
+         * <code>OneSignal.sendTags()</code>. Consider using <code>OneSignal.deleteTags()</code> if you need
+         * to delete more than one tag at a time.
+         *
+         * <p>Extension must be initialized using <code>OneSignal.init()</code> before calling this method.</p>
+         *
+         * @param key Key to delete.
+         *
+         * @see #sendTag()
+         * @see #sendTags()
+         * @see #getTags()
+         * @see #deleteTags()
+         */
+        public static function deleteTag( key:String ):void {
+            if( !isSupported ) return;
+            validateExtensionContext();
+
+            if( key === null ) throw new ArgumentError( "Parameter key cannot be null." );
+            deleteTags( new <String>[key] );
+        }
+
+        /**
+         * Deletes tags that were previously set on a user using <code>OneSignal.sendTag()</code> or
+         * <code>OneSignal.sendTags()</code>. Consider using <code>OneSignal.deleteTag()</code> to delete
+         * a single tag.
+         *
+         * <p>Extension must be initialized using <code>OneSignal.init()</code> before calling this method.</p>
+         *
+         * @param keys List of keys to delete.
+         *
+         * @see #sendTag()
+         * @see #sendTags()
+         * @see #getTags()
+         * @see #deleteTag()
+         */
+        public static function deleteTags( keys:Vector.<String> ):void {
+            if( !isSupported ) return;
+            validateExtensionContext();
+
+            if( keys === null ) throw new ArgumentError( "Parameter keys cannot be null." );
+
+            mContext.call( "deleteTags", keys );
         }
 
         /**
@@ -294,7 +430,69 @@ package com.marpies.ane.onesignal {
                         mNotificationCallbacks[i]( OneSignalNotification.fromJSON( responseJSON ) );
                     }
                     return;
+                case TAGS_RECEIVED:
+                    responseJSON = JSON.parse( event.level );
+                    var callbackID:int = ("callbackID" in responseJSON) ? responseJSON.callbackID : -1;
+                    var callback:Function = getCallback( callbackID );
+                    if( callback !== null ) {
+                        var tags:Object = responseJSON.tags;
+                        if( tags is String ) {
+                            tags = JSON.parse( tags as String );
+                        }
+                        callback( tags );
+                    }
+                    return;
             }
+        }
+
+        /**
+         * Registers given callback and generates ID which is used to look the callback up when it is time to call it.
+         * @param callback Function to register.
+         * @return ID of the callback.
+         */
+        private static function registerCallback( callback:Function ):int {
+            if( callback == null ) return -1;
+
+            mCallbackMap[mCallbackIdCounter] = callback;
+            return mCallbackIdCounter++;
+        }
+
+        /**
+         * Gets registered callback with given ID.
+         * @param callbackID ID of the callback to retrieve.
+         * @return Callback registered with given ID, or <code>null</code> if no such callback exists.
+         */
+        private static function getCallback( callbackID:int ):Function {
+            if( callbackID == -1 || !(callbackID in mCallbackMap) ) return null;
+            return mCallbackMap[callbackID];
+        }
+
+        /**
+         * Unregisters callback with given ID.
+         * @param callbackID ID of the callback to unregister.
+         */
+        private static function unregisterCallback( callbackID:int ):void {
+            if( callbackID in mCallbackMap ) {
+                delete mCallbackMap[callbackID];
+            }
+        }
+
+        /**
+         * Returns list of key-values from key-value object, e.g. { "key": "val" } -> [ "key", "val" ].
+         * @param object Key-value object to transform into list.
+         * @return List of key-values from <code>object</code>, or null if <code>object</code> is null.
+         */
+        private static function getVectorFromObject( object:Object ):Vector.<String> {
+            var properties:Vector.<String> = null;
+            if( object ) {
+                properties = new <String>[];
+                /* Create a list of object properties, that is key followed by its value */
+                for( var key:String in object ) {
+                    properties[properties.length] = key;
+                    properties[properties.length] = object[key];
+                }
+            }
+            return properties;
         }
 
         private static function log( message:String ):void {

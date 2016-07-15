@@ -6,7 +6,7 @@ Development of this extension is supported by [Master Tigra, Inc.](https://githu
 
 * Receiving push notifications sent from [OneSignal dashboard](https://onesignal.com/)
 * Managing user subscription
-* (todo) Segmenting users using tags
+* Segmenting users using tags
 
 ## Native SDK versions
 
@@ -204,7 +204,7 @@ private function onPushTokenReceived( oneSignalUserId:String, pushToken:String )
 
 #### Initialization
 
-Now proceed with ANE initialization by providing your OneSignal app ID. The two `Boolean` values that follow specify whether you want:
+Now proceed with ANE initialization by providing your OneSignal app ID. The two `Boolean` values that follow specify whether you want to:
 * `autoRegister` - register for push notifications immediately after initialization (i.e. prompt iOS user to confirm notifications). The value is ignored on Android where registration happens silently automatically.
 * `showLogs` - show extension debug logs.
 
@@ -227,6 +227,44 @@ OneSignal.setSubscription( false );
 ```
 
 You can pass `true` later to opt users back into notifications.
+
+#### Tagging
+
+By using tags you can segment your user base and create personalized notifications. Use one of the following methods to assign new or update an existing tag:
+
+```as3
+// key - value
+OneSignal.sendTag( "profession", "warrior" );
+
+// Or multiple tags at a time
+OneSignal.sendTags( {
+    "profession": "warrior",
+    "area": "desert"
+} );
+```
+
+Use one of the following methods to delete previously set tags:
+
+```as3
+OneSignal.deleteTag( "profession" );
+
+// Or multiple tags at a time
+OneSignal.deleteTags( new <String>["profession", "area"] );
+```
+
+Use the following method to retrieve the values current user has been tagged with:
+
+```as3
+OneSignal.getTags( onTagsRetrieved );
+...
+private function onTagsRetrieved( tags:Object ):void {
+    // tags may be null if there's a connection error or user has not been tagged
+    if( tags != null ) {
+        trace( tags["profession"] ); // warrior
+        trace( tags["area"] ); // desert
+    }
+}
+```
 
 ## Requirements
 

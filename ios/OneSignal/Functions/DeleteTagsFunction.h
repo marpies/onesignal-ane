@@ -14,16 +14,6 @@
  * limitations under the License.
  */
 
-#import <Foundation/Foundation.h>
-#import <AIRExtHelpers/MPUIApplicationListener.h>
+#import <AIRExtHelpers/FlashRuntimeExtensions.h>
 
-@interface OneSignalUIAppDelegate : NSObject<MPUIApplicationListener>
-
-- (id) initWithOneSignalAppId:(NSString*) oneSignalAppId autoRegister:(BOOL) autoRegister;
-- (void) registerForPushNotifications;
-- (void) setSubscription:(BOOL) subscription;
-- (void) sendTags:(NSDictionary*) tags;
-- (void) deleteTags:(NSArray*) tags;
-- (void) getTags:(int) callbackID;
-
-@end
+FREObject pushos_deleteTags( FREContext context, void* functionData, uint32_t argc, FREObject argv[] );

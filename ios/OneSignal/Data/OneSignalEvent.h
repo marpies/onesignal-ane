@@ -21,5 +21,6 @@
 
 static const NSString* OS_TOKEN_RECEIVED = @"tokenReceived";
 static const NSString* OS_NOTIFICATION_RECEIVED = @"notificationReceived";
+static const NSString* OS_TAGS_RECEIVED = @"tagsReceived";
 
 #endif /* OneSignalEvent_h */

@@ -63,6 +63,24 @@
     [mOneSignal setSubscription:subscription];
 }
 
+- (void) sendTags:(NSDictionary*) tags {
+    [mOneSignal sendTags: tags];
+}
+
+- (void) deleteTags:(NSArray*) tags {
+    [mOneSignal deleteTags: tags];
+}
+
+- (void) getTags:(int) callbackID {
+    [mOneSignal getTags:^(NSDictionary *result) {
+        [AIROneSignal log:@"OneSignal::getTags success"];
+        [self dispatchTags:result forCallback:callbackID];
+    } onFailure:^(NSError *error) {
+        [AIROneSignal log:[NSString stringWithFormat:@"OneSignal::getTags error: %@", error.localizedDescription]];
+        [self dispatchTags:nil forCallback:callbackID];
+    }];
+}
+
 - (void) addTokenCallback {
     [mOneSignal IdsAvailable:^(NSString *userId, NSString *pushToken) {
         [AIROneSignal log:[NSString stringWithFormat:@"OneSignal::idsAvailable %@ | token: %@", userId, pushToken]];
@@ -83,6 +101,15 @@
     response[@"message"] = message;
     response[@"isActive"] = [NSNumber numberWithBool:isActive];
     [AIROneSignal dispatchEvent:OS_NOTIFICATION_RECEIVED withMessage:[MPStringUtils getJSONString:response]];
+}
+
+- (void) dispatchTags:(nullable NSDictionary*) tags forCallback:(int) callbackID {
+    NSMutableDictionary* response = [NSMutableDictionary dictionary];
+    response[@"callbackID"] = [NSNumber numberWithInt:callbackID];
+    if( tags != nil ) {
+        response[@"tags"] = tags;
+    }
+    [AIROneSignal dispatchEvent:OS_TAGS_RECEIVED withMessage:[MPStringUtils getJSONString:response]];
 }
 
 - (void) parseLaunchOptions:(NSDictionary*) launchOptions {

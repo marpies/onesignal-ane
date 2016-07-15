@@ -58,11 +58,16 @@ package com.marpies.ane.onesignal {
          */
 
         /**
-         * Initializes extension context.
+         * Initializes extension context and native SDKs. Call as early as possible to be able to retrieve notifications
+         * which are launching the application.
          * 
          * @param oneSignalAppID ID of the app created in the OneSignal dashboard.
-         * @param autoRegister Set to <code>true</code> to register with notification server immediately after initialization.
+         * @param autoRegister <strong>iOS only</strong> - Set to <code>true</code> to register with notification server
+         *                     immediately after initialization. If set to <code>false</code>, <code>OneSignal.register()</code>
+         *                     must be called later to successfully register with Apple servers and receive notifications.
          * @param showLogs Set to <code>true</code> to show extension log messages.
+         *
+         * @see #register()
          * 
          * @return <code>true</code> if the extension context was created, <code>false</code> otherwise
          */
@@ -123,7 +128,7 @@ package com.marpies.ane.onesignal {
          * };
          * </listing>
          *
-         * @see #removeTokenReceivedCallback
+         * @see #removeTokenReceivedCallback()
          */
         public static function addTokenReceivedCallback( callback:Function ):void {
             if( !isSupported ) return;
@@ -139,7 +144,7 @@ package com.marpies.ane.onesignal {
          * Removes callback that was added earlier using <code>OneSignal.addTokenReceivedCallback</code>
          * @param callback Function to remove.
          *
-         * @see #addTokenReceivedCallback
+         * @see #addTokenReceivedCallback()
          */
         public static function removeTokenReceivedCallback( callback:Function ):void {
             if( !isSupported ) return;
@@ -162,7 +167,7 @@ package com.marpies.ane.onesignal {
          * };
          * </listing>
          *
-         * @see #removeNotificationReceivedCallback
+         * @see #removeNotificationReceivedCallback()
          */
         public static function addNotificationReceivedCallback( callback:Function ):void {
             if( !isSupported ) return;
@@ -178,7 +183,7 @@ package com.marpies.ane.onesignal {
          * Removes callback that was added earlier using <code>OneSignal.addNotificationReceivedCallback</code>
          * @param callback Function to remove.
          *
-         * @see #addNotificationReceivedCallback
+         * @see #addNotificationReceivedCallback()
          */
         public static function removeNotificationReceivedCallback( callback:Function ):void {
             if( !isSupported ) return;
@@ -241,7 +246,7 @@ package com.marpies.ane.onesignal {
         /**
          * Returns <code>true</code> if <code>OneSignal.init()</code> has been executed successfully.
          *
-         * @see #init
+         * @see #init()
          */
         public static function get isInitialized():Boolean {
             return mInitialized;

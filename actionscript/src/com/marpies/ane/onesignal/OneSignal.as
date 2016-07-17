@@ -354,6 +354,30 @@ package com.marpies.ane.onesignal {
          */
 
         /**
+         * Returns <code>true</code> if notifications are enabled for your app in the device
+         * settings and user has not opted out using <code>OneSignal.setSubscription( false )</code>.
+         *
+         * @see #setSubscription()
+         */
+        public static function get areNotificationsEnabled():Boolean {
+            if( !isSupported ) return false;
+            if( !mInitialized && !initExtensionContext() ) return false;
+
+            return mContext.call( "areNotificationsEnabled" ) as Boolean;
+        }
+
+        /**
+         * Returns <code>true</code> if the notification functionality is available on the current device.
+         * This may be <code>false</code> on Android devices which do not have Google Play Services installed.
+         */
+        public static function get areNotificationsAvailable():Boolean {
+            if( !isSupported ) return false;
+            if( !mInitialized && !initExtensionContext() ) return false;
+
+            return mContext.call( "areNotificationsAvailable" ) as Boolean;
+        }
+
+        /**
          * Version of the native OneSignal SDK.
          */
         public static function get sdkVersion():String {
@@ -369,7 +393,7 @@ package com.marpies.ane.onesignal {
          * Extension version.
          */
         public static function get version():String {
-            return "0.5.0";
+            return "0.6.0";
         }
 
         /**

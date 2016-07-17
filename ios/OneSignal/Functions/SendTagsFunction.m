@@ -22,7 +22,7 @@ FREObject pushos_sendTags( FREContext context, void* functionData, uint32_t argc
     [AIROneSignal log:@"pushos_sendTags"];
     NSArray* tagList = [MPFREObjectUtils getNSArray:argv[0]];
     NSMutableDictionary* tags = [NSMutableDictionary dictionary];
-    int numTags = tagList.count;
+    unsigned long numTags = tagList.count;
     for( int i = 0; i < numTags; ) {
         id key = [tagList objectAtIndex:i++];
         tags[key] = [tagList objectAtIndex:i++];

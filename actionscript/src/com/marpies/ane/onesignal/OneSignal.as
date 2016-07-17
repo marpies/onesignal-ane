@@ -367,7 +367,7 @@ package com.marpies.ane.onesignal {
         }
 
         /**
-         * Returns <code>true</code> if the notification functionality is available on the current device.
+         * Returns <code>true</code> if the notification functionality is available on current device.
          * This may be <code>false</code> on Android devices which do not have Google Play Services installed.
          */
         public static function get areNotificationsAvailable():Boolean {

@@ -16,26 +16,27 @@
 
 package com.marpies.ane.onesignal.functions;
 
+import android.content.Context;
 import com.adobe.fre.FREContext;
 import com.adobe.fre.FREObject;
+import com.adobe.fre.FREWrongThreadException;
 import com.marpies.ane.onesignal.utils.AIR;
-import com.marpies.ane.onesignal.utils.FREObjectUtils;
-import com.marpies.ane.onesignal.utils.OneSignalSubscriptionManager;
-import com.onesignal.OneSignal;
+import com.marpies.ane.onesignal.utils.NotificationManagerUtils;
 
-public class SetSubscriptionFunction extends BaseFunction {
+public class AreNotificationsAvailableFunction extends BaseFunction {
 
 	@Override
 	public FREObject call( FREContext context, FREObject[] args ) {
 		super.call( context, args );
 
-		boolean subscribe = FREObjectUtils.getBoolean( args[0] );
-
-		AIR.log( "OneSignal::setSubscription " + subscribe );
-		OneSignal.setSubscription( subscribe );
-
-		/* Store value in shared preferences */
-		OneSignalSubscriptionManager.setSubscription( subscribe );
+		try {
+			Context activity = AIR.getContext().getActivity();
+			boolean result = NotificationManagerUtils.checkPlayServices( activity );
+			AIR.log( "OneSignal::areNotificationsAvailable = " + result );
+			return FREObject.newObject( result );
+		} catch( FREWrongThreadException e ) {
+			e.printStackTrace();
+		}
 
 		return null;
 	}

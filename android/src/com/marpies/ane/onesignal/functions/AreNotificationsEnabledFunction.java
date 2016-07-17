@@ -16,26 +16,37 @@
 
 package com.marpies.ane.onesignal.functions;
 
+import android.os.Build;
 import com.adobe.fre.FREContext;
 import com.adobe.fre.FREObject;
+import com.adobe.fre.FREWrongThreadException;
 import com.marpies.ane.onesignal.utils.AIR;
-import com.marpies.ane.onesignal.utils.FREObjectUtils;
+import com.marpies.ane.onesignal.utils.NotificationManagerUtils;
 import com.marpies.ane.onesignal.utils.OneSignalSubscriptionManager;
-import com.onesignal.OneSignal;
 
-public class SetSubscriptionFunction extends BaseFunction {
+public class AreNotificationsEnabledFunction extends BaseFunction {
 
 	@Override
 	public FREObject call( FREContext context, FREObject[] args ) {
 		super.call( context, args );
 
-		boolean subscribe = FREObjectUtils.getBoolean( args[0] );
+		/* Notifications are always enabled below KitKat */
+		if( Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT ) {
+			try {
+				return FREObject.newObject( true );
+			} catch( FREWrongThreadException e ) {
+				e.printStackTrace();
+				return null;
+			}
+		}
 
-		AIR.log( "OneSignal::setSubscription " + subscribe );
-		OneSignal.setSubscription( subscribe );
-
-		/* Store value in shared preferences */
-		OneSignalSubscriptionManager.setSubscription( subscribe );
+		boolean result = OneSignalSubscriptionManager.getSubscription() && NotificationManagerUtils.areNotificationsEnabled( AIR.getContext().getActivity() );
+		AIR.log( "OneSignal::areNotificationsEnabled = " + result );
+		try {
+			return FREObject.newObject( result );
+		} catch( FREWrongThreadException e ) {
+			e.printStackTrace();
+		}
 
 		return null;
 	}

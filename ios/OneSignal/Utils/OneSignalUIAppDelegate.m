@@ -21,6 +21,8 @@
 #import <AIRExtHelpers/MPStringUtils.h>
 #import "OneSignalEvent.h"
 
+static NSString* const kPushOSDefaultsSubscriptionKey = @"pushos_subscription";
+
 @implementation OneSignalUIAppDelegate {
     BOOL mHasRegistered;
     OneSignal* mOneSignal;
@@ -61,6 +63,19 @@
 
 - (void) setSubscription:(BOOL) subscription {
     [mOneSignal setSubscription:subscription];
+    NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+    [defaults setBool:subscription forKey:kPushOSDefaultsSubscriptionKey];
+}
+
+- (BOOL) getSubscription {
+    NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+    id isKeySet = [defaults objectForKey:kPushOSDefaultsSubscriptionKey];
+    if( isKeySet != nil ) {
+        /* Key was set earlier, get the actual value */
+        return [defaults boolForKey:kPushOSDefaultsSubscriptionKey];
+    }
+    /* Key was not set earlier, default to YES */
+    return YES;
 }
 
 - (void) sendTags:(NSDictionary*) tags {

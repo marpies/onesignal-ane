@@ -14,17 +14,9 @@
  * limitations under the License.
  */
 
-#import <Foundation/Foundation.h>
-#import <AIRExtHelpers/MPUIApplicationListener.h>
+#import "AreNotificationsAvailableFunction.h"
+#import <AIRExtHelpers/MPFREObjectUtils.h>
 
-@interface OneSignalUIAppDelegate : NSObject<MPUIApplicationListener>
-
-- (id) initWithOneSignalAppId:(NSString*) oneSignalAppId autoRegister:(BOOL) autoRegister;
-- (void) registerForPushNotifications;
-- (void) setSubscription:(BOOL) subscription;
-- (BOOL) getSubscription;
-- (void) sendTags:(NSDictionary*) tags;
-- (void) deleteTags:(NSArray*) tags;
-- (void) getTags:(int) callbackID;
-
-@end
+FREObject pushos_notificationsAvailable( FREContext context, void* functionData, uint32_t argc, FREObject argv[] ) {
+    return [MPFREObjectUtils getFREObjectFromBOOL:YES];
+}

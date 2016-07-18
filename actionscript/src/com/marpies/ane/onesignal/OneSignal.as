@@ -68,9 +68,9 @@ package com.marpies.ane.onesignal {
          * which are launching the application.
          * 
          * @param oneSignalAppID ID of the app created in the OneSignal dashboard.
-         * @param autoRegister <strong>iOS only</strong> - Set to <code>true</code> to register with notification server
-         *                     immediately after initialization. If set to <code>false</code>, <code>OneSignal.register()</code>
-         *                     must be called later to successfully register with Apple servers and receive notifications.
+         * @param autoRegister Set to <code>true</code> to register with notification server immediately after initialization.
+         *                     If set to <code>false</code>, <code>OneSignal.register()</code> must be called later to successfully
+         *                     register with notification servers and obtain push token to receive notifications.
          * @param showLogs Set to <code>true</code> to show extension log messages.
          *
          * @see #register()
@@ -102,8 +102,7 @@ package com.marpies.ane.onesignal {
         }
 
         /**
-         * <strong>(iOS only)</strong> - Call this method when you want to prompt the user to accept push notifications.
-         * Android devices automatically register silently during initialization.
+         * Call this method when you want to prompt the user to accept push notifications.
          *
          * <p>Extension must be initialized using <code>OneSignal.init()</code> with <code>autoRegister</code>
          * parameter set to <code>false</code> before calling this method.</p>

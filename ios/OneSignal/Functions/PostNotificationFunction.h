@@ -14,15 +14,6 @@
  * limitations under the License.
  */
 
-#ifndef OneSignalEvent_h
-#define OneSignalEvent_h
+#import <AIRExtHelpers/FlashRuntimeExtensions.h>
 
-#import <Foundation/Foundation.h>
-
-static const NSString* OS_TOKEN_RECEIVED = @"tokenReceived";
-static const NSString* OS_NOTIFICATION_RECEIVED = @"notificationReceived";
-static const NSString* OS_TAGS_RECEIVED = @"tagsReceived";
-static const NSString* POST_NOTIFICATION_SUCCESS = @"postNotificationSuccess";
-static const NSString* POST_NOTIFICATION_ERROR = @"postNotificationError";
-
-#endif /* OneSignalEvent_h */
+FREObject pushos_postNotification( FREContext context, void* functionData, uint32_t argc, FREObject argv[] );

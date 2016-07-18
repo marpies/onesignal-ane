@@ -28,6 +28,8 @@ static NSString* const kPushOSDefaultsSubscriptionKey = @"pushos_subscription";
     OneSignal* mOneSignal;
 }
 
+#pragma mark - Public
+
 - (id) initWithOneSignalAppId:(NSString*) oneSignalAppId autoRegister:(BOOL) autoRegister {
     self = [super init];
     if( self ) {
@@ -95,6 +97,24 @@ static NSString* const kPushOSDefaultsSubscriptionKey = @"pushos_subscription";
         [self dispatchTags:nil forCallback:callbackID];
     }];
 }
+
+- (void) postNotification:(NSDictionary*) parameters callbackID:(int) callbackID {
+    [mOneSignal postNotification:parameters onSuccess:^(NSDictionary *result) {
+        [AIROneSignal log:@"OneSignalUIAppDelegate::postNotification | success"];
+        NSMutableDictionary* response = [NSMutableDictionary dictionary];
+        response[@"callbackID"] = [NSNumber numberWithInt:callbackID];
+        response[@"successResponse"] = result;
+        [AIROneSignal dispatchEvent:POST_NOTIFICATION_SUCCESS withMessage:[MPStringUtils getJSONString:response]];
+    } onFailure:^(NSError *error) {
+        [AIROneSignal log:@"OneSignalUIAppDelegate::postNotification | error"];
+        NSMutableDictionary* response = [NSMutableDictionary dictionary];
+        response[@"callbackID"] = [NSNumber numberWithInt:callbackID];
+        response[@"errorResponse"] = @{ @"error": error.localizedDescription };
+        [AIROneSignal dispatchEvent:POST_NOTIFICATION_ERROR withMessage:[MPStringUtils getJSONString:response]];
+    }];
+}
+
+#pragma mark - Private
 
 - (void) addTokenCallback {
     [mOneSignal IdsAvailable:^(NSString *userId, NSString *pushToken) {

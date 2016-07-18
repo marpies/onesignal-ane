@@ -18,6 +18,7 @@ package com.marpies.ane.onesignal.functions;
 
 import com.adobe.fre.FREContext;
 import com.adobe.fre.FREObject;
+import com.marpies.ane.onesignal.utils.AIR;
 
 public class RegisterFunction extends BaseFunction {
 
@@ -25,7 +26,8 @@ public class RegisterFunction extends BaseFunction {
 	public FREObject call( FREContext context, FREObject[] args ) {
 		super.call( context, args );
 
-		// Stub, Android OneSignal SDK registers immediately after initialization
+		AIR.log( "OneSignal::register" );
+		AIR.getOneSignalListener().dispatchCachedPushToken();
 
 		return null;
 	}

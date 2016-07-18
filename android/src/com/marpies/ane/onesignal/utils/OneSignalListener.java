@@ -25,6 +25,14 @@ import java.util.Iterator;
 
 public class OneSignalListener implements OneSignal.NotificationOpenedHandler, OneSignal.IdsAvailableHandler {
 
+	private String mUserId;
+	private String mPushToken;
+	private boolean mAutoRegister;
+
+	public OneSignalListener( boolean autoRegister ) {
+		mAutoRegister = autoRegister;
+	}
+
 	@Override
 	public void notificationOpened( String message, JSONObject additionalData, boolean isActive ) {
 		/* Response dispatched to AIR */
@@ -51,10 +59,29 @@ public class OneSignalListener implements OneSignal.NotificationOpenedHandler, O
 
 	@Override
 	public void idsAvailable( String userId, String pushToken ) {
-		AIR.log( "OneSignalListener::idsAvailable " + userId + " | pushToken: " + pushToken );
+		AIR.log( "OneSignalListener::idsAvailable " + userId + " | pushToken: " + pushToken + " | auto dispatch: " + mAutoRegister );
+		mUserId = userId;
+		mPushToken = pushToken;
+		/* Dispatch automatically only if autoRegister is enabled */
+		if( mAutoRegister ) {
+			dispatchPushToken();
+		}
+	}
+
+	public void dispatchCachedPushToken() {
+		AIR.log( "OneSignalListener::dispatchCachedPushToken" );
+		if( !mAutoRegister && (mUserId != null || mPushToken != null) ) {
+			dispatchPushToken();
+		}
+		/* Enable auto register so that the token is dispatched in case the SDK notifies us about token
+		 * change. Also this method may be called before token is known so autoRegister must be enabled */
+		mAutoRegister = true;
+	}
+
+	private void dispatchPushToken() {
 		JSONObject response = new JSONObject();
-		addValueForKey( response, "userId", userId );
-		addValueForKey( response, "pushToken", pushToken );
+		addValueForKey( response, "userId", mUserId );
+		addValueForKey( response, "pushToken", mPushToken );
 		AIR.dispatchEvent( OneSignalEvent.TOKEN_RECEIVED, response.toString() );
 	}
 

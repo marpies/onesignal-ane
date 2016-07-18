@@ -34,7 +34,7 @@ public class InitFunction extends BaseFunction {
 		if( AIR.getOneSignalListener() != null ) return null;
 
 		// oneSignalAppID param is parsed from AndroidManifest
-		// autoRegister is not applicable for Android
+		boolean autoRegister = FREObjectUtils.getBoolean( args[1] );
 		boolean showLogs = FREObjectUtils.getBoolean( args[2] );
 
 		AIR.setLogEnabled( showLogs );
@@ -42,7 +42,7 @@ public class InitFunction extends BaseFunction {
 			OneSignal.setLogLevel( OneSignal.LOG_LEVEL.DEBUG, OneSignal.LOG_LEVEL.NONE );
 		}
 
-		OneSignalListener listener = new OneSignalListener();
+		OneSignalListener listener = new OneSignalListener( autoRegister );
 		AIR.setOneSignalListener( listener );
 
 		Activity activity = AIR.getContext().getActivity();

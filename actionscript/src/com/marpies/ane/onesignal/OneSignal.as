@@ -32,6 +32,8 @@ package com.marpies.ane.onesignal {
         private static const TOKEN_RECEIVED:String = "tokenReceived";
         private static const NOTIFICATION_RECEIVED:String = "notificationReceived";
         private static const TAGS_RECEIVED:String = "tagsReceived";
+        private static const POST_NOTIFICATION_SUCCESS:String = "postNotificationSuccess";
+        private static const POST_NOTIFICATION_ERROR:String = "postNotificationError";
 
         /* Callbacks */
         private static var mTokenCallbacks:Vector.<Function> = new <Function>[];
@@ -256,6 +258,45 @@ package com.marpies.ane.onesignal {
         }
 
         /**
+         * Allows you to send notifications from user to user or schedule ones in the future to be
+         * delivered to the current device. Value for <code>app_id</code> is automatically inserted by native SDKs.
+         *
+         * <p>You can only use <code>include_player_ids</code> as a targeting parameter from your app.
+         * Other target options such as <code>tags</code> and <code>included_segments</code> require your
+         * OneSignal App REST API key which can only be used from your server.</p>
+         *
+         * <p>Extension must be initialized using <code>OneSignal.init()</code> before calling this method.</p>
+         *
+         * @param parameters Notification options, see <a href="https://documentation.onesignal.com/v2.0/docs/notifications-create-notification">OneSignal create notification REST API</a>
+         * @param callback Function with the following signature:
+         * <listing version="3.0">
+         * function callback( successResponse:Object, errorResponse:Object ):void {
+         *
+         * };
+         * </listing>
+         *
+         * @see http://documentation.onesignal.com/v2.0/docs/notifications-create-notification OneSignal create notification REST API
+         */
+        public static function postNotification( parameters:Object, callback:Function ):void {
+            if( !isSupported ) return;
+            validateExtensionContext();
+
+            if( parameters === null ) throw new ArgumentError( "Parameter parameters cannot be null." );
+
+            var parametersString:String = null;
+            try {
+                parametersString = JSON.stringify( parameters );
+            } catch( e:Error ) {
+                if( callback !== null ) {
+                    callback( null, { "error": e.message } );
+                }
+                return;
+            }
+
+            mContext.call( "postNotification", parametersString, registerCallback( callback ) );
+        }
+
+        /**
          * Adds callback that will be called when user registers for notifications and push token is received.
          * @param callback Function with the following signature:
          * <listing version="3.0">
@@ -439,6 +480,7 @@ package com.marpies.ane.onesignal {
             var responseJSON:Object = null;
             var i:int;
             var length:int;
+            var callback:Function = null;
             switch( event.code ) {
                 case TOKEN_RECEIVED:
                     responseJSON = JSON.parse( event.level );
@@ -456,14 +498,26 @@ package com.marpies.ane.onesignal {
                     return;
                 case TAGS_RECEIVED:
                     responseJSON = JSON.parse( event.level );
-                    var callbackID:int = ("callbackID" in responseJSON) ? responseJSON.callbackID : -1;
-                    var callback:Function = getCallback( callbackID );
+                    callback = getCallbackFromJSON( responseJSON );
                     if( callback !== null ) {
-                        var tags:Object = responseJSON.tags;
-                        if( tags is String ) {
-                            tags = JSON.parse( tags as String );
-                        }
+                        var tags:Object = getJSON( responseJSON.tags );
                         callback( tags );
+                    }
+                    return;
+                case POST_NOTIFICATION_SUCCESS:
+                    responseJSON = JSON.parse( event.level );
+                    callback = getCallbackFromJSON( responseJSON );
+                    if( callback !== null ) {
+                        var successResponse:Object = getJSON( responseJSON.successResponse );
+                        callback( successResponse, null );
+                    }
+                    return;
+                case POST_NOTIFICATION_ERROR:
+                    responseJSON = JSON.parse( event.level );
+                    callback = getCallbackFromJSON( responseJSON );
+                    if( callback !== null ) {
+                        var errorResponse:Object = getJSON( responseJSON.errorResponse );
+                        callback( null, errorResponse );
                     }
                     return;
             }
@@ -502,6 +556,20 @@ package com.marpies.ane.onesignal {
         }
 
         /**
+         * Retrieves callback ID from JSON response and gets callback registered with that ID.
+         * If callback is found, it is removed from the callback map.
+         *
+         * @param json JSON response that is expected to contain callback ID.
+         * @return Callback registered for the ID found in the JSON, or <code>null</code> if no callback exists.
+         */
+        private static function getCallbackFromJSON( json:Object ):Function {
+            var callbackID:int = ("callbackID" in json) ? json.callbackID : -1;
+            var callback:Function = getCallback( callbackID );
+            unregisterCallback( callbackID );
+            return callback;
+        }
+
+        /**
          * Returns list of key-values from key-value object, e.g. { "key": "val" } -> [ "key", "val" ].
          * @param object Key-value object to transform into list.
          * @return List of key-values from <code>object</code>, or null if <code>object</code> is null.
@@ -517,6 +585,13 @@ package com.marpies.ane.onesignal {
                 }
             }
             return properties;
+        }
+
+        private static function getJSON( value:Object ):Object {
+            if( value is String ) {
+                value = JSON.parse( value as String );
+            }
+            return value;
         }
 
         private static function log( message:String ):void {

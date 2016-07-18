@@ -1,6 +1,6 @@
 <extension xmlns="http://ns.adobe.com/air/extension/20.0">
   <id>com.marpies.ane.onesignal</id>
-  <versionNumber>0.6.0</versionNumber>
+  <versionNumber>0.7.0</versionNumber>
   <platforms>
     <platform name="iPhone-ARM">
         <applicationDeployment>

@@ -206,7 +206,7 @@ private function onPushTokenReceived( oneSignalUserId:String, pushToken:String )
 #### Initialization
 
 Now proceed with ANE initialization by providing your OneSignal app ID. The two `Boolean` values that follow specify whether you want to:
-* `autoRegister` - register for push notifications immediately after initialization (i.e. prompt iOS user to confirm notifications). The value is ignored on Android where registration happens silently automatically.
+* `autoRegister` - register for push notifications immediately after initialization (i.e. prompt iOS user to confirm notifications).
 * `showLogs` - show extension debug logs.
 
 The `init` method should be called in your document class' constructor, or as early as possible after your app's launch.
@@ -217,7 +217,7 @@ if( OneSignal.init( "{ONE-SIGNAL-APP-ID}", false, true ) ) {
 }
 ```
 
-If `autoRegister` is set to `false`, you will need to call `OneSignal.register()` later at some point to attempt registration with Apple servers. Generally, it is recommended to avoid auto registration to provide better user experience for users who launch your app for the very first time.
+If `autoRegister` is set to `false`, you will need to call `OneSignal.register()` later at some point to attempt registration with the notification servers. Generally, it is recommended to avoid auto registration to provide better user experience for users who launch your app for the very first time.
 
 #### Managing user subscription
 

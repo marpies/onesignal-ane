@@ -7,6 +7,7 @@ Development of this extension is supported by [Master Tigra, Inc.](https://githu
 * Receiving push notifications sent from [OneSignal dashboard](https://onesignal.com/)
 * Managing user subscription
 * Segmenting users using tags
+* Posting notifications from device
 
 ## Native SDK versions
 

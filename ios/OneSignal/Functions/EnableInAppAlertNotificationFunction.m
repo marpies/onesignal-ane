@@ -14,19 +14,13 @@
  * limitations under the License.
  */
 
-#import <Foundation/Foundation.h>
-#import <AIRExtHelpers/MPUIApplicationListener.h>
+#import "EnableInAppAlertNotificationFunction.h"
+#import <AIRExtHelpers/MPFREObjectUtils.h>
+#import "AIROneSignal.h"
 
-@interface OneSignalUIAppDelegate : NSObject<MPUIApplicationListener>
-
-- (id) initWithOneSignalAppId:(NSString*) oneSignalAppId autoRegister:(BOOL) autoRegister;
-- (void) registerForPushNotifications;
-- (void) setSubscription:(BOOL) subscription;
-- (BOOL) getSubscription;
-- (void) sendTags:(NSDictionary*) tags;
-- (void) deleteTags:(NSArray*) tags;
-- (void) getTags:(int) callbackID;
-- (void) postNotification:(NSDictionary*) parameters callbackID:(int) callbackID;
-- (void) enableInAppAlertNotification:(BOOL) enable;
-
-@end
+FREObject pushos_enableInAppAlert( FREContext context, void* functionData, uint32_t argc, FREObject argv[] ) {
+    [AIROneSignal log:@"pushos_enableInAppAlert"];
+    BOOL enable = [MPFREObjectUtils getBOOL:argv[0]];
+    [[[AIROneSignal sharedInstance] appDelegate] enableInAppAlertNotification:enable];
+    return nil;
+}

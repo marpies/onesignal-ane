@@ -90,6 +90,8 @@
         <copy file="../android/libs/OneSignalSDK.jar" tofile="temp/android/OneSignalSDK.jar" overwrite="true" />
         <!-- clean up -->
         <delete dir="temp/android/aar" />
+        <delete dir="../android/build" />
+        <delete dir="../android/.gradle" />
     </target>
 
 

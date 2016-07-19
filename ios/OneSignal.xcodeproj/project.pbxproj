@@ -8,11 +8,19 @@
 
 /* Begin PBXBuildFile section */
 		C3073AE81BE2C77C00EC89B7 /* InitFunction.m in Sources */ = {isa = PBXBuildFile; fileRef = C3073AE21BE2C77C00EC89B7 /* InitFunction.m */; };
-		C36015B11D37A079002E5373 /* OneSignal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C36015B01D37A079002E5373 /* OneSignal.framework */; };
+		C350BA701D38190C000E7C5A /* AIRExtHelpers.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C350BA6F1D38190C000E7C5A /* AIRExtHelpers.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		C350BA901D382CFE000E7C5A /* OneSignal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C350BA8F1D382CFE000E7C5A /* OneSignal.framework */; };
+		C350BA931D384BF7000E7C5A /* SetSubscriptionFunction.m in Sources */ = {isa = PBXBuildFile; fileRef = C350BA921D384BF7000E7C5A /* SetSubscriptionFunction.m */; };
+		C350BA961D3931BC000E7C5A /* SendTagsFunction.m in Sources */ = {isa = PBXBuildFile; fileRef = C350BA951D3931BC000E7C5A /* SendTagsFunction.m */; };
+		C350BA991D393214000E7C5A /* DeleteTagsFunction.m in Sources */ = {isa = PBXBuildFile; fileRef = C350BA981D393214000E7C5A /* DeleteTagsFunction.m */; };
+		C350BA9C1D393230000E7C5A /* GetTagsFunction.m in Sources */ = {isa = PBXBuildFile; fileRef = C350BA9B1D393230000E7C5A /* GetTagsFunction.m */; };
 		C36015B51D37B4AC002E5373 /* OneSignalUIAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = C36015B41D37B4AC002E5373 /* OneSignalUIAppDelegate.m */; };
 		C36015B81D37B5B8002E5373 /* AIROneSignal.m in Sources */ = {isa = PBXBuildFile; fileRef = C36015B71D37B5B8002E5373 /* AIROneSignal.m */; };
 		C36015BB1D37BBA9002E5373 /* RegisterFunction.m in Sources */ = {isa = PBXBuildFile; fileRef = C36015BA1D37BBA9002E5373 /* RegisterFunction.m */; };
-		C37509FA1C79388900516C15 /* AIRExtHelpers.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C37509F91C79388900516C15 /* AIRExtHelpers.framework */; };
+		C36015BE1D37E98E002E5373 /* GetSDKVersionFunction.m in Sources */ = {isa = PBXBuildFile; fileRef = C36015BD1D37E98E002E5373 /* GetSDKVersionFunction.m */; };
+		C37A12791D3A3B7600FD0CF4 /* AreNotificationsEnabledFunction.m in Sources */ = {isa = PBXBuildFile; fileRef = C37A12781D3A3B7600FD0CF4 /* AreNotificationsEnabledFunction.m */; };
+		C37A127C1D3A44D700FD0CF4 /* AreNotificationsAvailableFunction.m in Sources */ = {isa = PBXBuildFile; fileRef = C37A127B1D3A44D700FD0CF4 /* AreNotificationsAvailableFunction.m */; };
+		C3B0B6E81D3CF9CF00E920AA /* PostNotificationFunction.m in Sources */ = {isa = PBXBuildFile; fileRef = C3B0B6E71D3CF9CF00E920AA /* PostNotificationFunction.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -30,15 +38,32 @@
 /* Begin PBXFileReference section */
 		C3073AE11BE2C77C00EC89B7 /* InitFunction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InitFunction.h; sourceTree = "<group>"; };
 		C3073AE21BE2C77C00EC89B7 /* InitFunction.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = InitFunction.m; sourceTree = "<group>"; };
+		C350BA6F1D38190C000E7C5A /* AIRExtHelpers.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = AIRExtHelpers.framework; sourceTree = "<group>"; };
+		C350BA8F1D382CFE000E7C5A /* OneSignal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OneSignal.framework; sourceTree = "<group>"; };
+		C350BA911D384BF7000E7C5A /* SetSubscriptionFunction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SetSubscriptionFunction.h; sourceTree = "<group>"; };
+		C350BA921D384BF7000E7C5A /* SetSubscriptionFunction.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SetSubscriptionFunction.m; sourceTree = "<group>"; };
+		C350BA941D3931BC000E7C5A /* SendTagsFunction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SendTagsFunction.h; sourceTree = "<group>"; };
+		C350BA951D3931BC000E7C5A /* SendTagsFunction.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SendTagsFunction.m; sourceTree = "<group>"; };
+		C350BA971D393214000E7C5A /* DeleteTagsFunction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DeleteTagsFunction.h; sourceTree = "<group>"; };
+		C350BA981D393214000E7C5A /* DeleteTagsFunction.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DeleteTagsFunction.m; sourceTree = "<group>"; };
+		C350BA9A1D393230000E7C5A /* GetTagsFunction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GetTagsFunction.h; sourceTree = "<group>"; };
+		C350BA9B1D393230000E7C5A /* GetTagsFunction.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GetTagsFunction.m; sourceTree = "<group>"; };
 		C35331DE1B7BCE8A003A7521 /* libOneSignal.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libOneSignal.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		C36015B01D37A079002E5373 /* OneSignal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OneSignal.framework; sourceTree = "<group>"; };
 		C36015B31D37B4AC002E5373 /* OneSignalUIAppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OneSignalUIAppDelegate.h; path = Utils/OneSignalUIAppDelegate.h; sourceTree = "<group>"; };
 		C36015B41D37B4AC002E5373 /* OneSignalUIAppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = OneSignalUIAppDelegate.m; path = Utils/OneSignalUIAppDelegate.m; sourceTree = "<group>"; };
 		C36015B61D37B5B8002E5373 /* AIROneSignal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AIROneSignal.h; sourceTree = "<group>"; };
 		C36015B71D37B5B8002E5373 /* AIROneSignal.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AIROneSignal.m; sourceTree = "<group>"; };
 		C36015B91D37BBA9002E5373 /* RegisterFunction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RegisterFunction.h; sourceTree = "<group>"; };
 		C36015BA1D37BBA9002E5373 /* RegisterFunction.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RegisterFunction.m; sourceTree = "<group>"; };
-		C37509F91C79388900516C15 /* AIRExtHelpers.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = AIRExtHelpers.framework; sourceTree = "<group>"; };
+		C36015BC1D37E98E002E5373 /* GetSDKVersionFunction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GetSDKVersionFunction.h; sourceTree = "<group>"; };
+		C36015BD1D37E98E002E5373 /* GetSDKVersionFunction.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GetSDKVersionFunction.m; sourceTree = "<group>"; };
+		C36015BF1D37FB61002E5373 /* OneSignalEvent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OneSignalEvent.h; sourceTree = "<group>"; };
+		C37A12771D3A3B7600FD0CF4 /* AreNotificationsEnabledFunction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AreNotificationsEnabledFunction.h; sourceTree = "<group>"; };
+		C37A12781D3A3B7600FD0CF4 /* AreNotificationsEnabledFunction.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AreNotificationsEnabledFunction.m; sourceTree = "<group>"; };
+		C37A127A1D3A44D600FD0CF4 /* AreNotificationsAvailableFunction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AreNotificationsAvailableFunction.h; sourceTree = "<group>"; };
+		C37A127B1D3A44D700FD0CF4 /* AreNotificationsAvailableFunction.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AreNotificationsAvailableFunction.m; sourceTree = "<group>"; };
+		C3B0B6E61D3CF9CE00E920AA /* PostNotificationFunction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PostNotificationFunction.h; sourceTree = "<group>"; };
+		C3B0B6E71D3CF9CF00E920AA /* PostNotificationFunction.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PostNotificationFunction.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -46,8 +71,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C37509FA1C79388900516C15 /* AIRExtHelpers.framework in Frameworks */,
-				C36015B11D37A079002E5373 /* OneSignal.framework in Frameworks */,
+				C350BA701D38190C000E7C5A /* AIRExtHelpers.framework in Frameworks */,
+				C350BA901D382CFE000E7C5A /* OneSignal.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -70,6 +95,7 @@
 		C3073ADC1BE2C77C00EC89B7 /* Data */ = {
 			isa = PBXGroup;
 			children = (
+				C36015BF1D37FB61002E5373 /* OneSignalEvent.h */,
 			);
 			path = Data;
 			sourceTree = "<group>";
@@ -81,6 +107,22 @@
 				C3073AE21BE2C77C00EC89B7 /* InitFunction.m */,
 				C36015B91D37BBA9002E5373 /* RegisterFunction.h */,
 				C36015BA1D37BBA9002E5373 /* RegisterFunction.m */,
+				C36015BC1D37E98E002E5373 /* GetSDKVersionFunction.h */,
+				C36015BD1D37E98E002E5373 /* GetSDKVersionFunction.m */,
+				C350BA911D384BF7000E7C5A /* SetSubscriptionFunction.h */,
+				C350BA921D384BF7000E7C5A /* SetSubscriptionFunction.m */,
+				C350BA941D3931BC000E7C5A /* SendTagsFunction.h */,
+				C350BA951D3931BC000E7C5A /* SendTagsFunction.m */,
+				C350BA971D393214000E7C5A /* DeleteTagsFunction.h */,
+				C350BA981D393214000E7C5A /* DeleteTagsFunction.m */,
+				C350BA9A1D393230000E7C5A /* GetTagsFunction.h */,
+				C350BA9B1D393230000E7C5A /* GetTagsFunction.m */,
+				C37A12771D3A3B7600FD0CF4 /* AreNotificationsEnabledFunction.h */,
+				C37A12781D3A3B7600FD0CF4 /* AreNotificationsEnabledFunction.m */,
+				C37A127A1D3A44D600FD0CF4 /* AreNotificationsAvailableFunction.h */,
+				C37A127B1D3A44D700FD0CF4 /* AreNotificationsAvailableFunction.m */,
+				C3B0B6E61D3CF9CE00E920AA /* PostNotificationFunction.h */,
+				C3B0B6E71D3CF9CF00E920AA /* PostNotificationFunction.m */,
 			);
 			path = Functions;
 			sourceTree = "<group>";
@@ -113,8 +155,8 @@
 		C37509F81C79388900516C15 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				C36015B01D37A079002E5373 /* OneSignal.framework */,
-				C37509F91C79388900516C15 /* AIRExtHelpers.framework */,
+				C350BA8F1D382CFE000E7C5A /* OneSignal.framework */,
+				C350BA6F1D38190C000E7C5A /* AIRExtHelpers.framework */,
 			);
 			path = Frameworks;
 			sourceTree = "<group>";
@@ -178,7 +220,15 @@
 				C36015BB1D37BBA9002E5373 /* RegisterFunction.m in Sources */,
 				C36015B81D37B5B8002E5373 /* AIROneSignal.m in Sources */,
 				C3073AE81BE2C77C00EC89B7 /* InitFunction.m in Sources */,
+				C350BA961D3931BC000E7C5A /* SendTagsFunction.m in Sources */,
+				C3B0B6E81D3CF9CF00E920AA /* PostNotificationFunction.m in Sources */,
+				C350BA931D384BF7000E7C5A /* SetSubscriptionFunction.m in Sources */,
 				C36015B51D37B4AC002E5373 /* OneSignalUIAppDelegate.m in Sources */,
+				C36015BE1D37E98E002E5373 /* GetSDKVersionFunction.m in Sources */,
+				C350BA9C1D393230000E7C5A /* GetTagsFunction.m in Sources */,
+				C350BA991D393214000E7C5A /* DeleteTagsFunction.m in Sources */,
+				C37A12791D3A3B7600FD0CF4 /* AreNotificationsEnabledFunction.m in Sources */,
+				C37A127C1D3A44D700FD0CF4 /* AreNotificationsAvailableFunction.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

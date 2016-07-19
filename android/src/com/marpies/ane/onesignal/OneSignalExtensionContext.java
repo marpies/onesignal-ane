@@ -40,6 +40,7 @@ public class OneSignalExtensionContext extends FREContext {
 		functions.put( "areNotificationsEnabled", new AreNotificationsEnabledFunction() );
 		functions.put( "areNotificationsAvailable", new AreNotificationsAvailableFunction() );
 		functions.put( "postNotification", new PostNotificationFunction() );
+		functions.put( "enableInAppAlert", new EnableInAppAlertNotificationFunction() );
 
 		return functions;
 	}

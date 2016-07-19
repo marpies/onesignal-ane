@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		C3073AE81BE2C77C00EC89B7 /* InitFunction.m in Sources */ = {isa = PBXBuildFile; fileRef = C3073AE21BE2C77C00EC89B7 /* InitFunction.m */; };
-		C350BA701D38190C000E7C5A /* AIRExtHelpers.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C350BA6F1D38190C000E7C5A /* AIRExtHelpers.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		C350BA701D38190C000E7C5A /* AIRExtHelpers.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C350BA6F1D38190C000E7C5A /* AIRExtHelpers.framework */; settings = {ATTRIBUTES = (Required, ); }; };
 		C350BA901D382CFE000E7C5A /* OneSignal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C350BA8F1D382CFE000E7C5A /* OneSignal.framework */; };
 		C350BA931D384BF7000E7C5A /* SetSubscriptionFunction.m in Sources */ = {isa = PBXBuildFile; fileRef = C350BA921D384BF7000E7C5A /* SetSubscriptionFunction.m */; };
 		C350BA961D3931BC000E7C5A /* SendTagsFunction.m in Sources */ = {isa = PBXBuildFile; fileRef = C350BA951D3931BC000E7C5A /* SendTagsFunction.m */; };
@@ -21,6 +21,8 @@
 		C37A12791D3A3B7600FD0CF4 /* AreNotificationsEnabledFunction.m in Sources */ = {isa = PBXBuildFile; fileRef = C37A12781D3A3B7600FD0CF4 /* AreNotificationsEnabledFunction.m */; };
 		C37A127C1D3A44D700FD0CF4 /* AreNotificationsAvailableFunction.m in Sources */ = {isa = PBXBuildFile; fileRef = C37A127B1D3A44D700FD0CF4 /* AreNotificationsAvailableFunction.m */; };
 		C3B0B6E81D3CF9CF00E920AA /* PostNotificationFunction.m in Sources */ = {isa = PBXBuildFile; fileRef = C3B0B6E71D3CF9CF00E920AA /* PostNotificationFunction.m */; };
+		C3FE9B0B1D3E89DF009B5046 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C3FE9B0A1D3E89DF009B5046 /* SystemConfiguration.framework */; };
+		C3FE9B0E1D3E8DBC009B5046 /* EnableInAppAlertNotificationFunction.m in Sources */ = {isa = PBXBuildFile; fileRef = C3FE9B0D1D3E8DBC009B5046 /* EnableInAppAlertNotificationFunction.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -64,6 +66,9 @@
 		C37A127B1D3A44D700FD0CF4 /* AreNotificationsAvailableFunction.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AreNotificationsAvailableFunction.m; sourceTree = "<group>"; };
 		C3B0B6E61D3CF9CE00E920AA /* PostNotificationFunction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PostNotificationFunction.h; sourceTree = "<group>"; };
 		C3B0B6E71D3CF9CF00E920AA /* PostNotificationFunction.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PostNotificationFunction.m; sourceTree = "<group>"; };
+		C3FE9B0A1D3E89DF009B5046 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
+		C3FE9B0C1D3E8DBC009B5046 /* EnableInAppAlertNotificationFunction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EnableInAppAlertNotificationFunction.h; sourceTree = "<group>"; };
+		C3FE9B0D1D3E8DBC009B5046 /* EnableInAppAlertNotificationFunction.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EnableInAppAlertNotificationFunction.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -71,6 +76,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C3FE9B0B1D3E89DF009B5046 /* SystemConfiguration.framework in Frameworks */,
 				C350BA701D38190C000E7C5A /* AIRExtHelpers.framework in Frameworks */,
 				C350BA901D382CFE000E7C5A /* OneSignal.framework in Frameworks */,
 			);
@@ -123,6 +129,8 @@
 				C37A127B1D3A44D700FD0CF4 /* AreNotificationsAvailableFunction.m */,
 				C3B0B6E61D3CF9CE00E920AA /* PostNotificationFunction.h */,
 				C3B0B6E71D3CF9CF00E920AA /* PostNotificationFunction.m */,
+				C3FE9B0C1D3E8DBC009B5046 /* EnableInAppAlertNotificationFunction.h */,
+				C3FE9B0D1D3E8DBC009B5046 /* EnableInAppAlertNotificationFunction.m */,
 			);
 			path = Functions;
 			sourceTree = "<group>";
@@ -130,6 +138,7 @@
 		C35331D51B7BCE8A003A7521 = {
 			isa = PBXGroup;
 			children = (
+				C3FE9B0A1D3E89DF009B5046 /* SystemConfiguration.framework */,
 				C3073AD51BE2C77C00EC89B7 /* OneSignal */,
 				C35331DF1B7BCE8A003A7521 /* Products */,
 			);
@@ -217,6 +226,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C3FE9B0E1D3E8DBC009B5046 /* EnableInAppAlertNotificationFunction.m in Sources */,
 				C36015BB1D37BBA9002E5373 /* RegisterFunction.m in Sources */,
 				C36015B81D37B5B8002E5373 /* AIROneSignal.m in Sources */,
 				C3073AE81BE2C77C00EC89B7 /* InitFunction.m in Sources */,

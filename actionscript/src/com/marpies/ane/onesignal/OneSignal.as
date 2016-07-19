@@ -300,6 +300,22 @@ package com.marpies.ane.onesignal {
         }
 
         /**
+         * By default this is <code>false</code> and notifications will not be shown when the user is in your app.
+         * If set to <code>true</code> notifications will be shown as native alert boxes if a notification is
+         * received when the user is in your app.
+         *
+         * <p>Extension must be initialized using <code>OneSignal.init()</code> before calling this method.</p>
+         *
+         * @param value Set to <code>true</code> to enable native in app alert.
+         */
+        public static function enableInAppAlertNotification( value:Boolean ):void {
+            if( !isSupported ) return;
+            validateExtensionContext();
+
+            mContext.call( "enableInAppAlert", value );
+        }
+
+        /**
          * Adds callback that will be called when user registers for notifications and push token is received.
          * @param callback Function with the following signature:
          * <listing version="3.0">

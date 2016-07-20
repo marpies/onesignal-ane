@@ -281,3 +281,9 @@ ANT build scripts are available in the [build](build/) directory. Edit [build.pr
 
 ## Author
 The ANE has been written by [Marcel Piestansky](https://twitter.com/marpies) and is distributed under [Apache License, version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html).
+
+## Changelog
+
+#### July 20, 2016 (v0.8.0)
+
+* Public release

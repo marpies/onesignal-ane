@@ -30,7 +30,7 @@ First, add the extension's ID to the `extensions` element.
 </extensions>
 ```
 
-If you are targeting Android, add the following extensions as well (unless you know these libraries are included by some other extensions):
+If you are targeting Android, add the following extensions from [this repository](https://github.com/marpies/android-dependency-anes) as well (unless you know these libraries are included by some other extensions):
 
 ```xml
 <extensions>

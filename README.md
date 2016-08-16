@@ -1,5 +1,7 @@
 # OneSignal | Native extension for Adobe AIR (iOS &amp; Android)
 
+[OneSignal](https://onesignal.com/) is a free service that allows high volume, cross platform push notification delivery. This extension provides cross-platform API for Adobe AIR apps targeting iOS and Android.
+
 Development of this extension is supported by [Master Tigra, Inc.](https://github.com/mastertigra)
 
 ## Features
@@ -152,7 +154,7 @@ For Android support, modify `manifestAdditions` element so that it contains the 
 ```
 
 In the snippet above, replace:
-* `{APP-PACKAGE-NAME}` with your app package name (value of `id` element in your AIR app descriptor)
+* `{APP-PACKAGE-NAME}` with your app package name (value of `id` element in your AIR app descriptor). Remember it's prefixed with `air.` when packaged by AIR SDK, unless you knowingly prevent this.
 * `{ONE-SIGNAL-APP-ID}` with your OneSignal app id
 * `{GOOGLE-SENDER-ID}` with your Google Sender ID (also known as Google Project Number) obtained from [the tutorial](https://documentation.onesignal.com/docs/android-generating-a-gcm-push-notification-key)
 

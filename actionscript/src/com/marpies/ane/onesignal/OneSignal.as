@@ -497,23 +497,13 @@ package com.marpies.ane.onesignal {
 
         private static function onStatus( event:StatusEvent ):void {
             var responseJSON:Object = null;
-            var i:int;
-            var length:int;
             var callback:Function = null;
             switch( event.code ) {
                 case TOKEN_RECEIVED:
-                    responseJSON = JSON.parse( event.level );
-                    length = mTokenCallbacks.length;
-                    for( i = 0; i < length; ++i ) {
-                        mTokenCallbacks[i]( responseJSON.userId, responseJSON.pushToken );
-                    }
+                    triggerTokenCallbacks( event.level );
                     return;
                 case NOTIFICATION_RECEIVED:
-                    responseJSON = JSON.parse( event.level );
-                    length = mNotificationCallbacks.length;
-                    for( i = 0; i < length; ++i ) {
-                        mNotificationCallbacks[i]( OneSignalNotification.fromJSON( responseJSON ) );
-                    }
+                    triggerNotificationCallbacks( event.level );
                     return;
                 case TAGS_RECEIVED:
                     responseJSON = JSON.parse( event.level );
@@ -539,6 +529,46 @@ package com.marpies.ane.onesignal {
                         callback( null, errorResponse );
                     }
                     return;
+            }
+        }
+
+        /**
+         * Calls the registered token callbacks.
+         *
+         * @param eventResponse String JSON that contains OneSignal user id and possibly also push token.
+         */
+        private static function triggerTokenCallbacks( eventResponse:String ):void {
+            var length:int = mTokenCallbacks.length;
+            /* Create callbacks copy because a callback may be removed when triggered */
+            if( length > 0 ) {
+                var responseJSON:Object = JSON.parse( eventResponse );
+                var tempCallbacks:Vector.<Function> = new <Function>[];
+                for( var i:int = 0; i < length; ++i ) {
+                    tempCallbacks[i] = mTokenCallbacks[i];
+                }
+                for( i = 0; i < length; ++i ) {
+                    tempCallbacks[i]( responseJSON.userId, responseJSON.pushToken );
+                }
+            }
+        }
+
+        /**
+         * Calls the registered notification callbacks.
+         *
+         * @param eventResponse String JSON that contains data about received notification.
+         */
+        private static function triggerNotificationCallbacks( eventResponse:String ):void {
+            var length:int = mNotificationCallbacks.length;
+            /* Create callbacks copy because a callback may be removed when triggered */
+            if( length > 0 ) {
+                var responseJSON:Object = JSON.parse( eventResponse );
+                var tempCallbacks:Vector.<Function> = new <Function>[];
+                for( var i:int = 0; i < length; ++i ) {
+                    tempCallbacks[i] = mNotificationCallbacks[i];
+                }
+                for( i = 0; i < length; ++i ) {
+                    tempCallbacks[i]( OneSignalNotification.fromJSON( responseJSON ) );
+                }
             }
         }
 

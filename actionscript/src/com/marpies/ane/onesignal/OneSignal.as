@@ -453,7 +453,7 @@ package com.marpies.ane.onesignal {
          * Extension version.
          */
         public static function get version():String {
-            return "0.8.0";
+            return "1.0.0";
         }
 
         /**

@@ -27,6 +27,8 @@ package com.marpies.ane.onesignal {
         private static const EXTENSION_ID:String = "com.marpies.ane.onesignal";
 
         private static var mContext:ExtensionContext;
+        /* Settings */
+        private static const SETTINGS:OneSignalSettings = new OneSignalSettings();
 
         /* Event codes */
         private static const TOKEN_RECEIVED:String = "tokenReceived";
@@ -43,7 +45,6 @@ package com.marpies.ane.onesignal {
 
         /* Misc */
         private static var mInitialized:Boolean;
-        private static var mLogEnabled:Boolean;
         private static const iOS:Boolean = Capabilities.manufacturer.indexOf( "iOS" ) > -1;
         private static const ANDROID:Boolean = Capabilities.manufacturer.indexOf( "Android" ) > -1;
 
@@ -66,23 +67,20 @@ package com.marpies.ane.onesignal {
         /**
          * Initializes extension context and native SDKs. Call as early as possible to be able to retrieve notifications
          * which are launching the application.
+         *
+         * <p>Before initializing, you can specify OneSignal configuration using <code>OneSignal.settings</code>.</p>
          * 
          * @param oneSignalAppID ID of the app created in the OneSignal dashboard.
-         * @param autoRegister Set to <code>true</code> to register with notification server immediately after initialization.
-         *                     If set to <code>false</code>, <code>OneSignal.register()</code> must be called later to successfully
-         *                     register with notification servers and obtain push token to receive notifications.
-         * @param showLogs Set to <code>true</code> to show extension log messages.
          *
-         * @see #register()
+         * @see #settings
          * 
          * @return <code>true</code> if the extension context was created, <code>false</code> otherwise
          */
-        public static function init( oneSignalAppID:String, autoRegister:Boolean = false, showLogs:Boolean = false ):Boolean {
+        public static function init( oneSignalAppID:String ):Boolean {
             if( !isSupported ) return false;
             if( mInitialized ) return true;
 
             if( iOS && oneSignalAppID === null ) throw new ArgumentError( "Parameter oneSignalAppID cannot be null when targeting iOS." );
-            mLogEnabled = showLogs;
 
             /* Initialize context */
             if( !initExtensionContext() ) {
@@ -95,7 +93,7 @@ package com.marpies.ane.onesignal {
             mContext.addEventListener( StatusEvent.STATUS, onStatus );
 
             /* Call init */
-            mContext.call( "init", oneSignalAppID, autoRegister, showLogs );
+            mContext.call( "init", oneSignalAppID, settings.autoRegister, settings.enableInAppAlerts, settings.showLogs );
 
             mInitialized = true;
             return true;
@@ -104,8 +102,10 @@ package com.marpies.ane.onesignal {
         /**
          * Call this method when you want to prompt the user to accept push notifications.
          *
-         * <p>Extension must be initialized using <code>OneSignal.init()</code> with <code>autoRegister</code>
-         * parameter set to <code>false</code> before calling this method.</p>
+         * <p>You only need to call this method if <code>OneSignal.settings.autoRegister</code> was
+         * set to <code>false</code> when calling <code>OneSignal.init()</code>.</p>
+         *
+         * @see com.marpies.ane.onesignal.OneSignalSettings#setAutoRegister()
          */
         public static function register():void {
             if( !isSupported ) return;
@@ -300,22 +300,6 @@ package com.marpies.ane.onesignal {
         }
 
         /**
-         * By default this is <code>false</code> and notifications will not be shown when the user is in your app.
-         * If set to <code>true</code> notifications will be shown as native alert boxes if a notification is
-         * received when the user is in your app.
-         *
-         * <p>Extension must be initialized using <code>OneSignal.init()</code> before calling this method.</p>
-         *
-         * @param value Set to <code>true</code> to enable native in app alert.
-         */
-        public static function enableInAppAlertNotification( value:Boolean ):void {
-            if( !isSupported ) return;
-            validateExtensionContext();
-
-            mContext.call( "enableInAppAlert", value );
-        }
-
-        /**
          * Adds callback that will be called when user registers for notifications and push token is received.
          * @param callback Function with the following signature:
          * <listing version="3.0">
@@ -435,6 +419,18 @@ package com.marpies.ane.onesignal {
             if( !mInitialized && !initExtensionContext() ) return false;
 
             return mContext.call( "areNotificationsAvailable" ) as Boolean;
+        }
+
+        /**
+         * Returns settings object to specify OneSignal configuration. Corresponding values must
+         * be set before calling <code>OneSignal.init()</code>.
+         *
+         * <p>Changing the settings values after the extension is initialized has no effect.</p>
+         *
+         * @see #init()
+         */
+        public static function get settings():OneSignalSettings {
+            return SETTINGS;
         }
 
         /**
@@ -644,7 +640,7 @@ package com.marpies.ane.onesignal {
         }
 
         private static function log( message:String ):void {
-            if( mLogEnabled ) {
+            if( settings.showLogs ) {
                 trace( TAG, message );
             }
         }

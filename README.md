@@ -13,8 +13,8 @@ Development of this extension is supported by [Master Tigra, Inc.](https://githu
 
 ## Native SDK versions
 
-* iOS `v1.13.03`
-* Android `v2.06.00`
+* iOS `v2.0.9`
+* Android `v3.0.2`
 
 ## Getting started
 
@@ -160,7 +160,7 @@ In the snippet above, replace:
 
 ### Custom Android icons
 
-The native OneSignal SDK for Android uses your app's icon in the notification area. Starting with Android 5, the OS forces the notification icon to be all white when your app targets Android API 21+. If you do not make a correct small icon, it will most likely be displayed as a solid white square or circle in the status bar. Therefore it is recommended you provide custom icons and repackage the extension.
+The native OneSignal SDK for Android uses your app's icon in the notification area. Starting with Android 5, the OS forces the notification icon to be all white when your app targets Android API 21+. If you do not make a correct small icon, the SDK will display a notification bell icon since converting your app icon would most likely result in displaying a solid white square or circle. Therefore it is recommended you provide custom icons and repackage the extension.
 
 You will need to create small icons in 4 sizes and replace the ones in the [android project res directory](android/com.marpies.ane.onesignal-res/):
 
@@ -207,19 +207,26 @@ private function onPushTokenReceived( oneSignalUserId:String, pushToken:String )
 
 #### Initialization
 
-Now proceed with ANE initialization by providing your OneSignal app ID. The two `Boolean` values that follow specify whether you want to:
-* `autoRegister` - register for push notifications immediately after initialization (i.e. prompt iOS user to confirm notifications).
-* `showLogs` - show extension debug logs.
-
-The `init` method should be called in your document class' constructor, or as early as possible after your app's launch.
+Before initializing OneSignal, you can set the following settings parameters:
 
 ```as3
-if( OneSignal.init( "{ONE-SIGNAL-APP-ID}", false, true ) ) {
+OneSignal.settings
+    .setAutoRegister( false )
+    .setEnableInAppAlerts( false )
+    .setShowLogs( false );
+```
+
+All these values default to `false` and changing them after the extension is initialized has no effect.
+
+Now proceed with ANE initialization by providing your OneSignal app ID. The `init` method should be called in your document class' constructor, or as early as possible after your app's launch.
+
+```as3
+if( OneSignal.init( "{ONE-SIGNAL-APP-ID}" ) ) {
     // successfully initialized
 }
 ```
 
-If `autoRegister` is set to `false`, you will need to call `OneSignal.register()` later at some point to attempt registration with the notification servers. Generally, it is recommended to avoid auto registration to provide better user experience for users who launch your app for the very first time.
+If `OneSignal.settings.autoRegister` is set to `false` when initializing the extension, you will need to call `OneSignal.register()` later at some point to attempt registration with the notification servers. Generally, it is recommended to avoid auto registration to provide better user experience for users who launch your app for the very first time.
 
 #### Managing user subscription
 
@@ -285,6 +292,13 @@ ANT build scripts are available in the [build](build/) directory. Edit [build.pr
 The ANE has been written by [Marcel Piestansky](https://twitter.com/marpies) and is distributed under [Apache License, version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html).
 
 ## Changelog
+
+#### August 17, 2016 (v1.0.0)
+
+* UPDATED OneSignal SDKs for both iOS (v2.0.9) and Android (v3.0.2)
+* REMOVED `enableInAppAlertNotification` method and config parameters from `OneSignal.init` method
+  Optional settings can now be configured using `OneSignal.settings` getter before initializing the extension (see [Initialization](#initialization))
+* FIXED bug causing out-of-range array access if there are multiple token/notification callbacks and one of them is removed when they are triggered
 
 #### July 20, 2016 (v0.8.0)
 

@@ -11,6 +11,9 @@ package com.marpies.ane.onesignal {
         private var mStackedNotification:Boolean;
         private var mStackedNotifications:Vector.<OneSignalNotification>;
 
+        /**
+         * @private
+         */
         public function OneSignalNotification() {
         }
 
@@ -20,14 +23,13 @@ package com.marpies.ane.onesignal {
         internal static function fromJSON( json:Object ):OneSignalNotification {
             var notification:OneSignalNotification = new OneSignalNotification();
             notification.mMessage = json.message;
-            notification.mAppActive = json.isActive === true;
+            notification.mAppActive = (json.isActive === true) || (json.isActive == 1);
             /* Check if the notification contains multiple stacked notifications */
             if( "stacked_notifications" in json ) {
                 var stackedNotifications:Array = getArrayFromJSONValue( json.stacked_notifications );
                 if( stackedNotifications !== null ) {
                     notification.mStackedNotification = true;
-                    /* 'isActive' must be passed from the original JSON since the stacked notifications do not have this boolean */
-                    notification.mStackedNotifications = fromArray( stackedNotifications, notification.mAppActive );
+                    notification.mStackedNotifications = fromArray( stackedNotifications );
                 }
                 delete json.stacked_notifications;
             }
@@ -53,12 +55,11 @@ package com.marpies.ane.onesignal {
         /**
          * @private
          */
-        private static function fromArray( array:Array, isAppActive:Boolean ):Vector.<OneSignalNotification> {
+        private static function fromArray( array:Array ):Vector.<OneSignalNotification> {
             var result:Vector.<OneSignalNotification> = new <OneSignalNotification>[];
             var length:int = array.length;
             for( var i:int = 0; i < length; ++i ) {
                 var notification:OneSignalNotification = fromJSON( array[i] );
-                notification.mAppActive = isAppActive;
                 result[i] = notification;
             }
             return result;

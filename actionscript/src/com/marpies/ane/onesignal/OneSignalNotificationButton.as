@@ -5,6 +5,9 @@ package com.marpies.ane.onesignal {
         private var mId:String;
         private var mText:String;
 
+        /**
+         * @private
+         */
         public function OneSignalNotificationButton() {
         }
 
@@ -24,6 +27,9 @@ package com.marpies.ane.onesignal {
          * @private
          */
         private static function fromJSON( json:Object ):OneSignalNotificationButton {
+            if( json is String ) {
+                json = JSON.parse( json as String );
+            }
             var button:OneSignalNotificationButton = new OneSignalNotificationButton();
             button.mId = json.id;
             button.mText = json.text;

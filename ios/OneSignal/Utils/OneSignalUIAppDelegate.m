@@ -114,10 +114,6 @@ static NSString* const kPushOSDefaultsSubscriptionKey = @"pushos_subscription";
     }];
 }
 
-- (void) enableInAppAlertNotification:(BOOL) enable {
-    [mOneSignal enableInAppAlertNotification:enable];
-}
-
 #pragma mark - Private
 
 - (void) addTokenCallback {

@@ -27,6 +27,5 @@
 - (void) deleteTags:(NSArray*) tags;
 - (void) getTags:(int) callbackID;
 - (void) postNotification:(NSDictionary*) parameters callbackID:(int) callbackID;
-- (void) enableInAppAlertNotification:(BOOL) enable;
 
 @end

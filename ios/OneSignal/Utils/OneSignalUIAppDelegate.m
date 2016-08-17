@@ -25,26 +25,32 @@ static NSString* const kPushOSDefaultsSubscriptionKey = @"pushos_subscription";
 
 @implementation OneSignalUIAppDelegate {
     BOOL mHasRegistered;
-    OneSignal* mOneSignal;
 }
 
 #pragma mark - Public
 
-- (id) initWithOneSignalAppId:(NSString*) oneSignalAppId autoRegister:(BOOL) autoRegister {
+- (id) initWithOneSignalAppId:(NSString*) oneSignalAppId autoRegister:(BOOL) autoRegister enableInAppAlerts:(BOOL) enableInAppAlerts {
     self = [super init];
     if( self ) {
         if( !autoRegister ) {
             [AIROneSignal log:@"Auto register is disabled"];
         }
-        /* Manually dispatch notification from launchOptions, if there's one */
-        NSDictionary* launchOptions = [MPUIApplicationDelegate launchOptions];
-        [self parseLaunchOptions:launchOptions];
         /* Initialize OneSignal */
         mHasRegistered = autoRegister;
-        mOneSignal = [[OneSignal alloc] initWithLaunchOptions:[MPUIApplicationDelegate launchOptions] appId:oneSignalAppId handleNotification:^(NSString *message, NSDictionary *additionalData, BOOL isActive) {
-            [AIROneSignal log:@"OneSignalUIAppDelegate::handleNotification"];
-            [self dispatchNotificationMessage:message additionalData:additionalData isActive:isActive];
-        } autoRegister:autoRegister];
+        [OneSignal initWithLaunchOptions:[MPUIApplicationDelegate launchOptions] appId:oneSignalAppId handleNotificationReceived:^(OSNotification *notification) {
+            [AIROneSignal log:@"OneSignalUIAppDelegate::handleNotificationReceived"];
+            /* Notification in this handler will only be dispatched to AIR if the app is in focus,
+             * otherwise we'll wait for user interaction and the notification will be handled in 'handleNotificationAction' */
+            if( notification.displayType == None ) {
+                [AIROneSignal log:@"Received notification while app is active, dispatching."];
+                [self dispatchNotification:[self getJSONForNotification:notification]];
+            } else {
+                [AIROneSignal log:@"Received notification while in background, waiting for user interaction."];
+            }
+        } handleNotificationAction:^(OSNotificationResult *result) {
+            [AIROneSignal log:@"OneSignalUIAppDelegate::handleNotificationAction"];
+            [self dispatchNotification:[self getJSONForNotification:result.notification notificationAction:result.action]];
+        } settings:@{ kOSSettingsKeyInAppAlerts: @(enableInAppAlerts), kOSSettingsKeyAutoPrompt: @(autoRegister) }];
         
         if( autoRegister ) {
             [self addTokenCallback];
@@ -56,7 +62,7 @@ static NSString* const kPushOSDefaultsSubscriptionKey = @"pushos_subscription";
 - (void) registerForPushNotifications {
     if( !mHasRegistered ) {
         mHasRegistered = YES;
-        [mOneSignal registerForPushNotifications];
+        [OneSignal registerForPushNotifications];
         [self addTokenCallback];
     } else {
         [AIROneSignal log:@"User has already registered for push notifications, ignoring."];
@@ -64,7 +70,7 @@ static NSString* const kPushOSDefaultsSubscriptionKey = @"pushos_subscription";
 }
 
 - (void) setSubscription:(BOOL) subscription {
-    [mOneSignal setSubscription:subscription];
+    [OneSignal setSubscription:subscription];
     NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
     [defaults setBool:subscription forKey:kPushOSDefaultsSubscriptionKey];
 }
@@ -81,15 +87,15 @@ static NSString* const kPushOSDefaultsSubscriptionKey = @"pushos_subscription";
 }
 
 - (void) sendTags:(NSDictionary*) tags {
-    [mOneSignal sendTags: tags];
+    [OneSignal sendTags: tags];
 }
 
 - (void) deleteTags:(NSArray*) tags {
-    [mOneSignal deleteTags: tags];
+    [OneSignal deleteTags: tags];
 }
 
 - (void) getTags:(int) callbackID {
-    [mOneSignal getTags:^(NSDictionary *result) {
+    [OneSignal getTags:^(NSDictionary *result) {
         [AIROneSignal log:@"OneSignal::getTags success"];
         [self dispatchTags:result forCallback:callbackID];
     } onFailure:^(NSError *error) {
@@ -99,7 +105,7 @@ static NSString* const kPushOSDefaultsSubscriptionKey = @"pushos_subscription";
 }
 
 - (void) postNotification:(NSDictionary*) parameters callbackID:(int) callbackID {
-    [mOneSignal postNotification:parameters onSuccess:^(NSDictionary *result) {
+    [OneSignal postNotification:parameters onSuccess:^(NSDictionary *result) {
         [AIROneSignal log:@"OneSignalUIAppDelegate::postNotification | success"];
         NSMutableDictionary* response = [NSMutableDictionary dictionary];
         response[@"callbackID"] = [NSNumber numberWithInt:callbackID];
@@ -117,7 +123,7 @@ static NSString* const kPushOSDefaultsSubscriptionKey = @"pushos_subscription";
 #pragma mark - Private
 
 - (void) addTokenCallback {
-    [mOneSignal IdsAvailable:^(NSString *userId, NSString *pushToken) {
+    [OneSignal IdsAvailable:^(NSString *userId, NSString *pushToken) {
         [AIROneSignal log:[NSString stringWithFormat:@"OneSignal::idsAvailable %@ | token: %@", userId, pushToken]];
         NSMutableDictionary* response = [NSMutableDictionary dictionary];
         if( userId != nil ) {
@@ -130,12 +136,43 @@ static NSString* const kPushOSDefaultsSubscriptionKey = @"pushos_subscription";
     }];
 }
 
-- (void) dispatchNotificationMessage:(NSString*) message additionalData:(NSDictionary*) additionalData isActive:(BOOL) isActive {
-    [AIROneSignal log:@"OneSignalUIAppDelegate::dispatchNotificationMessage"];
-    NSMutableDictionary* response = additionalData ? [NSMutableDictionary dictionaryWithDictionary:additionalData] : [NSMutableDictionary dictionary];
-    response[@"message"] = message;
-    response[@"isActive"] = [NSNumber numberWithBool:isActive];
-    [AIROneSignal dispatchEvent:OS_NOTIFICATION_RECEIVED withMessage:[MPStringUtils getJSONString:response]];
+- (NSDictionary*) getJSONForNotification:(nonnull OSNotification*) notification {
+    return [self getJSONForNotification:notification notificationAction:nil];
+}
+
+- (NSDictionary*) getJSONForNotification:(nonnull OSNotification*) notification notificationAction:(nullable OSNotificationAction*) action {
+    OSNotificationPayload* payload = notification.payload;
+    NSMutableDictionary* json = [NSMutableDictionary dictionary];
+    json[@"message"] = payload.body;
+    json[@"isActive"] = @(notification.displayType == None);
+    if( payload.title != nil ) {
+        json[@"title"] = payload.title;
+    }
+    if( payload.subtitle != nil ) {
+        json[@"subtitle"] = payload.subtitle;
+    }
+    if( payload.launchURL != nil ) {
+        json[@"launchURL"] = payload.launchURL;
+    }
+    if( payload.additionalData != nil ) {
+        NSArray* keys = [[payload additionalData] allKeys];
+        for( id key in keys ) {
+            json[key] = payload.additionalData[key];
+        }
+    }
+    if( payload.actionButtons != nil ) {
+        json[@"actionButtons"] = [self getButtons:(NSArray*)payload.actionButtons];
+        NSString* actionSelected = @"__DEFAULT__";
+        if( action != nil && action.actionID != nil ) {
+            actionSelected = action.actionID;
+        }
+        json[@"actionSelected"] = actionSelected;
+    }
+    return json;
+}
+
+- (void) dispatchNotification:(NSDictionary*) notificationJSON {
+    [AIROneSignal dispatchEvent:OS_NOTIFICATION_RECEIVED withMessage:[MPStringUtils getJSONString:notificationJSON]];
 }
 
 - (void) dispatchTags:(nullable NSDictionary*) tags forCallback:(int) callbackID {
@@ -147,61 +184,15 @@ static NSString* const kPushOSDefaultsSubscriptionKey = @"pushos_subscription";
     [AIROneSignal dispatchEvent:OS_TAGS_RECEIVED withMessage:[MPStringUtils getJSONString:response]];
 }
 
-- (void) parseLaunchOptions:(NSDictionary*) launchOptions {
-    if( !launchOptions ) return;
-    NSDictionary* userInfo = [launchOptions objectForKey:UIApplicationLaunchOptionsRemoteNotificationKey];
-    if( !userInfo ) return;
-    
-    /* Message, title */
-    NSString* message = nil;
-    NSString* title = nil;
-    NSMutableDictionary* additionalData = nil;
-    NSDictionary* aps = [userInfo objectForKey:@"aps"];
-    id alert = aps[@"alert"];
-    if( alert ) {
-        if( [alert isKindOfClass:[NSString class]] ) {
-            message = alert;
-        } else if( [alert isKindOfClass:[NSDictionary class]] ) {
-            message = alert[@"body"];
-            title = alert[@"title"];
-        }
-    } else if( userInfo[@"m"] ) {
-        message = userInfo[@"m"][@"body"];
-        title = userInfo[@"m"][@"title"];
+- (NSArray*) getButtons:(NSArray*) buttonsRaw {
+    NSMutableArray* buttons = [NSMutableArray array];
+    for( NSDictionary* button in buttonsRaw ) {
+        [buttons addObject:@{
+                             @"id": button[@"i"] ? button[@"i"] : button[@"n"],
+                             @"text": button[@"n"]
+                             }];
     }
-    if( title ) {
-        additionalData = [NSMutableDictionary dictionary];
-        additionalData[@"title"] = title;
-    }
-    /* Additional data */
-    id custom = userInfo[@"custom"];
-    if( custom ) {
-        if( !additionalData ) {
-            additionalData = [NSMutableDictionary dictionaryWithDictionary:custom[@"a"]];
-        } else {
-            [additionalData addEntriesFromDictionary:custom[@"a"]];
-        }
-    }
-    /* Buttons */
-    NSMutableArray* buttons = nil;
-    id buttonsRaw = userInfo[@"o"];
-    if( buttonsRaw ) {
-        buttons = [NSMutableArray array];
-        for( NSDictionary* button in buttonsRaw ) {
-            [buttons addObject:@{
-                                 @"id": button[@"i"] ? button[@"i"] : button[@"n"],
-                                 @"text": button[@"n"]
-                                }];
-        }
-        if( !additionalData ) {
-            additionalData = [NSMutableDictionary dictionary];
-        }
-        additionalData[@"actionButtons"] = buttons;
-        additionalData[@"actionSelected"] = @"__DEFAULT__";
-    }
-    
-    [AIROneSignal log:[NSString stringWithFormat:@"launchNotification: m: %@, t: %@, a: %@", message, title, additionalData]];
-    [self dispatchNotificationMessage:message additionalData:additionalData isActive:NO];
+    return buttons;
 }
 
 @end

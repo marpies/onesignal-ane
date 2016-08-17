@@ -19,7 +19,7 @@
 
 @interface OneSignalUIAppDelegate : NSObject<MPUIApplicationListener>
 
-- (id) initWithOneSignalAppId:(NSString*) oneSignalAppId autoRegister:(BOOL) autoRegister;
+- (id) initWithOneSignalAppId:(NSString*) oneSignalAppId autoRegister:(BOOL) autoRegister enableInAppAlerts:(BOOL) enableInAppAlerts;
 - (void) registerForPushNotifications;
 - (void) setSubscription:(BOOL) subscription;
 - (BOOL) getSubscription;

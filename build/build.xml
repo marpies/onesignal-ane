@@ -45,7 +45,6 @@
             <fileset dir="../ios/OneSignal/Frameworks/OneSignal.framework"/>
         </copy>
 
-        <copy file="temp/swc/content/library.swf" todir="temp/ios" overwrite="true"/>
         <!-- remove the build directory -->
         <delete dir="temp/ios/build/"/>
     </target>

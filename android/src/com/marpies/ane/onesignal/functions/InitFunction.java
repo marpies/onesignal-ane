@@ -35,7 +35,8 @@ public class InitFunction extends BaseFunction {
 
 		// oneSignalAppID param is parsed from AndroidManifest
 		boolean autoRegister = FREObjectUtils.getBoolean( args[1] );
-		boolean showLogs = FREObjectUtils.getBoolean( args[2] );
+		boolean enableInAppAlerts = FREObjectUtils.getBoolean( args[2] );
+		boolean showLogs = FREObjectUtils.getBoolean( args[3] );
 
 		AIR.setLogEnabled( showLogs );
 		if( showLogs ) {
@@ -45,9 +46,16 @@ public class InitFunction extends BaseFunction {
 		OneSignalListener listener = new OneSignalListener( autoRegister );
 		AIR.setOneSignalListener( listener );
 
+		OneSignal.OSInFocusDisplayOption inFocusDisplayOption =
+				enableInAppAlerts ? OneSignal.OSInFocusDisplayOption.InAppAlert : OneSignal.OSInFocusDisplayOption.None;
+
 		Activity activity = AIR.getContext().getActivity();
 		AIR.log( "Initializing OneSignal" );
-		OneSignal.startInit( activity ).setNotificationOpenedHandler( listener ).init();
+		OneSignal.startInit( activity )
+				.setNotificationOpenedHandler( listener )
+				.setNotificationReceivedHandler( listener )
+				.inFocusDisplaying( inFocusDisplayOption )
+				.init();
 		/* Must be added after init() */
 		OneSignal.idsAvailable( listener );
 

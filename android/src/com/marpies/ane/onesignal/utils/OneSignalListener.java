@@ -17,13 +17,15 @@
 package com.marpies.ane.onesignal.utils;
 
 import com.marpies.ane.onesignal.data.OneSignalEvent;
-import com.onesignal.OneSignal;
+import com.onesignal.*;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Iterator;
+import java.util.List;
 
-public class OneSignalListener implements OneSignal.NotificationOpenedHandler, OneSignal.IdsAvailableHandler {
+public class OneSignalListener implements OneSignal.NotificationOpenedHandler, OneSignal.IdsAvailableHandler, OneSignal.NotificationReceivedHandler {
 
 	private String mUserId;
 	private String mPushToken;
@@ -33,28 +35,44 @@ public class OneSignalListener implements OneSignal.NotificationOpenedHandler, O
 		mAutoRegister = autoRegister;
 	}
 
-	@Override
-	public void notificationOpened( String message, JSONObject additionalData, boolean isActive ) {
-		/* Response dispatched to AIR */
-		JSONObject response = new JSONObject();
-		AIR.log( "OneSignalListener::notificationOpened" );
-		if( additionalData != null ) {
-			Iterator<String> it = additionalData.keys();
-			while( it.hasNext() ) {
-				String key = it.next();
-				try {
-					/* Build response JSON from the additionalData */
-					addValueForKey( response, key, additionalData.get( key ) );
-				} catch( JSONException e ) {
-					e.printStackTrace();
-				}
-			}
-		}
+	/**
+	 *
+	 *
+	 * Public API
+	 *
+	 *
+	 */
 
-		addValueForKey( response, "message", message );
-		addValueForKey( response, "isActive", isActive );
+	@Override
+	public void notificationOpened( OSNotificationOpenResult openedResult ) {
+		AIR.log( "OneSignalListener::notificationOpened" );
+		OSNotification notification = openedResult.notification;
+
+		/* Response dispatched to AIR */
+		JSONObject response = getJSONForNotification( notification );
+
+		/* Add action buttons */
+		addActionButtonsToResponse( response, notification.payload, openedResult );
+		/* Add stacked notifications */
+		addStackedNotificationsToResponse( response, notification );
 
 		AIR.dispatchEvent( OneSignalEvent.NOTIFICATION_RECEIVED, response.toString() );
+	}
+
+	@Override
+	public void notificationReceived( OSNotification osNotification ) {
+		AIR.log( "OneSignalListener::notificationReceived | app active: " + osNotification.isAppInFocus );
+		/* Notification in this handler will only be dispatched to AIR if the app is in focus,
+		 * otherwise we'll wait for user interaction and the notification will be handled in 'notificationOpened' */
+		if( osNotification.isAppInFocus ) {
+			JSONObject response = getJSONForNotification( osNotification );
+			addActionButtonsToResponse( response, osNotification.payload );
+			addStackedNotificationsToResponse( response, osNotification );
+			AIR.log( "Received notification while app is active, dispatching." );
+			AIR.dispatchEvent( OneSignalEvent.NOTIFICATION_RECEIVED, response.toString() );
+		} else {
+			AIR.log( "Received notification while in background, waiting for user interaction." );
+		}
 	}
 
 	@Override
@@ -76,6 +94,92 @@ public class OneSignalListener implements OneSignal.NotificationOpenedHandler, O
 		/* Enable auto register so that the token is dispatched in case the SDK notifies us about token
 		 * change. Also this method may be called before token is known so autoRegister must be enabled */
 		mAutoRegister = true;
+	}
+
+	/**
+	 *
+	 *
+	 * Private API
+	 *
+	 *
+	 */
+
+	private void addActionButtonsToResponse( JSONObject response, OSNotificationPayload payload ) {
+		addActionButtonsToResponse( response, payload, null );
+	}
+
+	private void addActionButtonsToResponse( JSONObject response, OSNotificationPayload payload, OSNotificationOpenResult openedResult ) {
+		List<OSNotificationPayload.ActionButton> actionButtons = payload.actionButtons;
+		if( actionButtons != null ) {
+			JSONArray actionButtonsJSON = new JSONArray();
+			for( OSNotificationPayload.ActionButton actionButton : actionButtons ) {
+				actionButtonsJSON.put( String.format(
+						"{ \"id\": \"%s\", \"text\": \"%s\" }",
+						actionButton.id, actionButton.text
+				) );
+			}
+			String actionSelected = "__DEFAULT__";
+			if( openedResult != null ) {
+				if( openedResult.action.actionType == OSNotificationAction.ActionType.ActionTaken ) {
+					actionSelected = openedResult.action.actionID;
+				}
+			}
+			addValueForKey( response, "actionSelected", actionSelected );
+			addValueForKey( response, "actionButtons", actionButtonsJSON );
+		}
+	}
+
+	private void addStackedNotificationsToResponse( JSONObject response, OSNotification notification ) {
+		List<OSNotificationPayload> groupedNotifications = notification.groupedNotifications;
+		if( groupedNotifications != null ) {
+			JSONArray groupedNotificationsJSON = new JSONArray();
+			for( OSNotificationPayload payload : groupedNotifications ) {
+				JSONObject json = getJSONForNotificationPayload( payload, notification.isAppInFocus );
+				addActionButtonsToResponse( json, payload );
+				groupedNotificationsJSON.put( json );
+			}
+			addValueForKey( response, "stacked_notifications", groupedNotificationsJSON.toString() );
+		}
+	}
+
+	private JSONObject getJSONForNotification( OSNotification notification ) {
+		return getJSONForNotification( notification, null );
+	}
+
+	private JSONObject getJSONForNotification( OSNotification notification, JSONObject out ) {
+		JSONObject json = (out == null) ? new JSONObject() : out;
+		getJSONForNotificationPayload( notification.payload, notification.isAppInFocus, json );
+		return json;
+	}
+
+	private JSONObject getJSONForNotificationPayload( OSNotificationPayload payload, boolean isAppInFocus ) {
+		return getJSONForNotificationPayload( payload, isAppInFocus, null );
+	}
+
+	private JSONObject getJSONForNotificationPayload( OSNotificationPayload payload, boolean isAppInFocus, JSONObject out ) {
+		JSONObject json = (out == null) ? new JSONObject() : out;
+		String message = (payload.groupMessage != null) ? payload.groupMessage : payload.body;
+		addValueForKey( json, "message", message );
+		addValueForKey( json, "isActive", isAppInFocus );
+		if( payload.title != null ) {
+			addValueForKey( json, "title", payload.title );
+		}
+		addAdditionalDataToNotificationJSON( json, payload.additionalData );
+		return json;
+	}
+
+	private void addAdditionalDataToNotificationJSON( JSONObject notificationJSON, JSONObject additionalData ) {
+		if( additionalData != null ) {
+			Iterator<String> it = additionalData.keys();
+			while( it.hasNext() ) {
+				String key = it.next();
+				try {
+					addValueForKey( notificationJSON, key, additionalData.get( key ) );
+				} catch( JSONException e ) {
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 
 	private void dispatchPushToken() {

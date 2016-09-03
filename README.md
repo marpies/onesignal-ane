@@ -160,7 +160,7 @@ In the snippet above, replace:
 
 ### Custom Android icons
 
-The native OneSignal SDK for Android uses your app's icon in the notification area. Starting with Android 5, the OS forces the notification icon to be all white when your app targets Android API 21+. If you do not make a correct small icon, the SDK will display a notification bell icon since converting your app icon would most likely result in displaying a solid white square or circle. Therefore it is recommended you provide custom icons and repackage the extension.
+Starting with Android 5, the OS forces the notification icon to be all white when your app targets Android API 21+. If you do not make a correct small icon, the SDK will display a notification bell icon since converting your app icon would most likely result in displaying a solid white square or circle. Therefore it is recommended you provide custom icons and repackage the extension.
 
 You will need to create small icons in 4 sizes and replace the ones in the [android project res directory](android/com.marpies.ane.onesignal-res/):
 

@@ -27,5 +27,6 @@
 - (void) deleteTags:(NSArray*) tags;
 - (void) getTags:(int) callbackID;
 - (void) postNotification:(NSDictionary*) parameters callbackID:(int) callbackID;
+- (void) idsAvailable;
 
 @end

@@ -59,7 +59,7 @@ static NSString* const kPushOSDefaultsSubscriptionKey = @"pushos_subscription";
                     }];
         
         if( autoRegister ) {
-            [self addTokenCallback];
+            [self idsAvailable];
         }
     }
     return self;
@@ -69,7 +69,7 @@ static NSString* const kPushOSDefaultsSubscriptionKey = @"pushos_subscription";
     if( !mHasRegistered ) {
         mHasRegistered = YES;
         [OneSignal registerForPushNotifications];
-        [self addTokenCallback];
+        [self idsAvailable];
     } else {
         [AIROneSignal log:@"User has already registered for push notifications, ignoring."];
     }
@@ -126,9 +126,7 @@ static NSString* const kPushOSDefaultsSubscriptionKey = @"pushos_subscription";
     }];
 }
 
-#pragma mark - Private
-
-- (void) addTokenCallback {
+- (void) idsAvailable {
     [OneSignal IdsAvailable:^(NSString *userId, NSString *pushToken) {
         [AIROneSignal log:[NSString stringWithFormat:@"OneSignal::idsAvailable %@ | token: %@", userId, pushToken]];
         NSMutableDictionary* response = [NSMutableDictionary dictionary];
@@ -141,6 +139,9 @@ static NSString* const kPushOSDefaultsSubscriptionKey = @"pushos_subscription";
         [AIROneSignal dispatchEvent:OS_TOKEN_RECEIVED withMessage:[MPStringUtils getJSONString:response]];
     }];
 }
+
+
+#pragma mark - Private
 
 - (NSDictionary*) getJSONForNotification:(nonnull OSNotification*) notification {
     return [self getJSONForNotification:notification notificationAction:nil];

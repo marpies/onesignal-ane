@@ -21,6 +21,7 @@
 		C37A127C1D3A44D700FD0CF4 /* AreNotificationsAvailableFunction.m in Sources */ = {isa = PBXBuildFile; fileRef = C37A127B1D3A44D700FD0CF4 /* AreNotificationsAvailableFunction.m */; };
 		C3B0B6E81D3CF9CF00E920AA /* PostNotificationFunction.m in Sources */ = {isa = PBXBuildFile; fileRef = C3B0B6E71D3CF9CF00E920AA /* PostNotificationFunction.m */; };
 		C3DB220F1D968F47005B84B3 /* OneSignal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C3DB220E1D968F47005B84B3 /* OneSignal.framework */; };
+		C3DB22121D96A660005B84B3 /* IdsAvailableFunction.m in Sources */ = {isa = PBXBuildFile; fileRef = C3DB22111D96A660005B84B3 /* IdsAvailableFunction.m */; };
 		C3FE9B0B1D3E89DF009B5046 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C3FE9B0A1D3E89DF009B5046 /* SystemConfiguration.framework */; };
 /* End PBXBuildFile section */
 
@@ -65,6 +66,8 @@
 		C3B0B6E61D3CF9CE00E920AA /* PostNotificationFunction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PostNotificationFunction.h; sourceTree = "<group>"; };
 		C3B0B6E71D3CF9CF00E920AA /* PostNotificationFunction.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PostNotificationFunction.m; sourceTree = "<group>"; };
 		C3DB220E1D968F47005B84B3 /* OneSignal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OneSignal.framework; sourceTree = "<group>"; };
+		C3DB22101D96A660005B84B3 /* IdsAvailableFunction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IdsAvailableFunction.h; sourceTree = "<group>"; };
+		C3DB22111D96A660005B84B3 /* IdsAvailableFunction.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IdsAvailableFunction.m; sourceTree = "<group>"; };
 		C3FE9B0A1D3E89DF009B5046 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -108,6 +111,8 @@
 			children = (
 				C3073AE11BE2C77C00EC89B7 /* InitFunction.h */,
 				C3073AE21BE2C77C00EC89B7 /* InitFunction.m */,
+				C3DB22101D96A660005B84B3 /* IdsAvailableFunction.h */,
+				C3DB22111D96A660005B84B3 /* IdsAvailableFunction.m */,
 				C36015B91D37BBA9002E5373 /* RegisterFunction.h */,
 				C36015BA1D37BBA9002E5373 /* RegisterFunction.m */,
 				C36015BC1D37E98E002E5373 /* GetSDKVersionFunction.h */,
@@ -232,6 +237,7 @@
 				C350BA9C1D393230000E7C5A /* GetTagsFunction.m in Sources */,
 				C350BA991D393214000E7C5A /* DeleteTagsFunction.m in Sources */,
 				C37A12791D3A3B7600FD0CF4 /* AreNotificationsEnabledFunction.m in Sources */,
+				C3DB22121D96A660005B84B3 /* IdsAvailableFunction.m in Sources */,
 				C37A127C1D3A44D700FD0CF4 /* AreNotificationsAvailableFunction.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

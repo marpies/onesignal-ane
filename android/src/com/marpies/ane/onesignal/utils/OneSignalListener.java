@@ -120,7 +120,7 @@ public class OneSignalListener implements OneSignal.NotificationOpenedHandler, O
 			}
 			String actionSelected = "__DEFAULT__";
 			if( openedResult != null ) {
-				if( openedResult.action.actionType == OSNotificationAction.ActionType.ActionTaken ) {
+				if( openedResult.action.type == OSNotificationAction.ActionType.ActionTaken ) {
 					actionSelected = openedResult.action.actionID;
 				}
 			}

@@ -37,20 +37,26 @@ static NSString* const kPushOSDefaultsSubscriptionKey = @"pushos_subscription";
         }
         /* Initialize OneSignal */
         mHasRegistered = autoRegister;
+        
+        OSNotificationDisplayType inFocusDisplayType = enableInAppAlerts ? OSNotificationDisplayTypeInAppAlert : OSNotificationDisplayTypeNone;
         [OneSignal initWithLaunchOptions:[MPUIApplicationDelegate launchOptions] appId:oneSignalAppId handleNotificationReceived:^(OSNotification *notification) {
             [AIROneSignal log:@"OneSignalUIAppDelegate::handleNotificationReceived"];
             /* Notification in this handler will only be dispatched to AIR if the app is in focus,
              * otherwise we'll wait for user interaction and the notification will be handled in 'handleNotificationAction' */
-            if( notification.displayType == None ) {
+            if( notification.displayType == OSNotificationDisplayTypeNone ) {
                 [AIROneSignal log:@"Received notification while app is active, dispatching."];
                 [self dispatchNotification:[self getJSONForNotification:notification]];
             } else {
                 [AIROneSignal log:@"Received notification while in background, waiting for user interaction."];
             }
-        } handleNotificationAction:^(OSNotificationResult *result) {
+        } handleNotificationAction:^(OSNotificationOpenedResult *result) {
             [AIROneSignal log:@"OneSignalUIAppDelegate::handleNotificationAction"];
             [self dispatchNotification:[self getJSONForNotification:result.notification notificationAction:result.action]];
-        } settings:@{ kOSSettingsKeyInAppAlerts: @(enableInAppAlerts), kOSSettingsKeyAutoPrompt: @(autoRegister) }];
+        } settings:@{
+                     kOSSettingsKeyInAppAlerts: @(enableInAppAlerts),
+                     kOSSettingsKeyAutoPrompt: @(autoRegister),
+                     kOSSettingsKeyInFocusDisplayOption: @(inFocusDisplayType)
+                    }];
         
         if( autoRegister ) {
             [self addTokenCallback];
@@ -144,7 +150,7 @@ static NSString* const kPushOSDefaultsSubscriptionKey = @"pushos_subscription";
     OSNotificationPayload* payload = notification.payload;
     NSMutableDictionary* json = [NSMutableDictionary dictionary];
     json[@"message"] = payload.body;
-    json[@"isActive"] = @(notification.displayType == None);
+    json[@"isActive"] = @(notification.displayType == OSNotificationDisplayTypeNone);
     if( payload.title != nil ) {
         json[@"title"] = payload.title;
     }

@@ -38,7 +38,7 @@ package com.marpies.ane.onesignal {
         private static const POST_NOTIFICATION_ERROR:String = "postNotificationError";
 
         /* Callbacks */
-        private static var mTokenCallbacks:Vector.<Function> = new <Function>[];
+        private static var mIdsAvailableCallback:Function;
         private static var mNotificationCallbacks:Vector.<Function> = new <Function>[];
         private static var mCallbackMap:Dictionary;
         private static var mCallbackIdCounter:int;
@@ -301,39 +301,23 @@ package com.marpies.ane.onesignal {
 
         /**
          * Adds callback that will be called when user registers for notifications and push token is received.
+         *
+         * <p>There can only be one callback registered at a time, and it is automatically removed when
+         * the push token is received. You can remove it manually by passing in <code>null</code>.</p>
+         *
          * @param callback Function with the following signature:
          * <listing version="3.0">
          * function callback( oneSignalUserId:String, pushToken:String ):void {
          *    // pushToken may be null if there's an error (server side, connection error...)
          * };
          * </listing>
-         *
-         * @see #removeTokenReceivedCallback()
          */
-        public static function addTokenReceivedCallback( callback:Function ):void {
-            if( !isSupported ) return;
+        public static function idsAvailable( callback:Function ):void {
+            if( !isSupported || !initExtensionContext() ) return;
 
-            if( callback === null ) throw new ArgumentError( "Parameter callback cannot be null." );
-
-            if( mTokenCallbacks.indexOf( callback ) < 0 ) {
-                mTokenCallbacks[mTokenCallbacks.length] = callback;
-            }
-        }
-
-        /**
-         * Removes callback that was added earlier using <code>OneSignal.addTokenReceivedCallback</code>
-         * @param callback Function to remove.
-         *
-         * @see #addTokenReceivedCallback()
-         */
-        public static function removeTokenReceivedCallback( callback:Function ):void {
-            if( !isSupported ) return;
-
-            if( callback === null ) throw new ArgumentError( "Parameter callback cannot be null." );
-
-            var index:int = mTokenCallbacks.indexOf( callback );
-            if( index >= 0 ) {
-                mTokenCallbacks.removeAt( index );
+            mIdsAvailableCallback = callback;
+            if( mIdsAvailableCallback !== null ) {
+                mContext.call( "idsAvailable" );
             }
         }
 
@@ -382,6 +366,9 @@ package com.marpies.ane.onesignal {
         public static function dispose():void {
             if( !isSupported ) return;
             validateExtensionContext();
+
+            mIdsAvailableCallback = null;
+            mNotificationCallbacks.length = 0;
 
             mContext.removeEventListener( StatusEvent.STATUS, onStatus );
 
@@ -496,7 +483,14 @@ package com.marpies.ane.onesignal {
             var callback:Function = null;
             switch( event.code ) {
                 case TOKEN_RECEIVED:
-                    triggerTokenCallbacks( event.level );
+                    if( mIdsAvailableCallback !== null ) {
+                        responseJSON = JSON.parse( event.level );
+                        mIdsAvailableCallback( responseJSON.userId, responseJSON.pushToken );
+                        /* Remove the callback if the push token is available */
+                        if( "pushToken" in responseJSON ) {
+                            mIdsAvailableCallback = null;
+                        }
+                    }
                     return;
                 case NOTIFICATION_RECEIVED:
                     triggerNotificationCallbacks( event.level );
@@ -525,26 +519,6 @@ package com.marpies.ane.onesignal {
                         callback( null, errorResponse );
                     }
                     return;
-            }
-        }
-
-        /**
-         * Calls the registered token callbacks.
-         *
-         * @param eventResponse String JSON that contains OneSignal user id and possibly also push token.
-         */
-        private static function triggerTokenCallbacks( eventResponse:String ):void {
-            var length:int = mTokenCallbacks.length;
-            /* Create callbacks copy because a callback may be removed when triggered */
-            if( length > 0 ) {
-                var responseJSON:Object = JSON.parse( eventResponse );
-                var tempCallbacks:Vector.<Function> = new <Function>[];
-                for( var i:int = 0; i < length; ++i ) {
-                    tempCallbacks[i] = mTokenCallbacks[i];
-                }
-                for( i = 0; i < length; ++i ) {
-                    tempCallbacks[i]( responseJSON.userId, responseJSON.pushToken );
-                }
             }
         }
 

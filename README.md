@@ -19,8 +19,8 @@ Development of this extension is supported by [Master Tigra, Inc.](https://githu
 ## Getting started
 
 Create an app in the [OneSignal dashboard](https://onesignal.com/). Single OneSignal app can be configured for both iOS and Android.
-* To support Android, follow the [tutorial on how to obtain necessary information from Google](https://documentation.onesignal.com/docs/android-generating-a-gcm-push-notification-key).
-* To support iOS, follow the [tutorial on how to properly setup your iOS certificates and provisioning profiles](https://documentation.onesignal.com/docs/generating-an-ios-push-certificate).
+* To support Android, follow the [tutorial on how to obtain necessary information from Google](https://documentation.onesignal.com/docs/generate-a-google-server-api-key).
+* To support iOS, follow the [tutorial on how to properly setup your iOS certificates and provisioning profiles](https://documentation.onesignal.com/docs/generate-an-ios-push-certificate).
 
 ### Additions to AIR descriptor
 
@@ -156,7 +156,7 @@ For Android support, modify `manifestAdditions` element so that it contains the 
 In the snippet above, replace:
 * `{APP-PACKAGE-NAME}` with your app package name (value of `id` element in your AIR app descriptor). Remember it's prefixed with `air.` when packaged by AIR SDK, unless you knowingly prevent this.
 * `{ONE-SIGNAL-APP-ID}` with your OneSignal app id
-* `{GOOGLE-SENDER-ID}` with your Google Sender ID (also known as Google Project Number) obtained from [the tutorial](https://documentation.onesignal.com/docs/android-generating-a-gcm-push-notification-key)
+* `{GOOGLE-SENDER-ID}` with your Google Sender ID (also known as Google Project Number) obtained from [the tutorial](https://documentation.onesignal.com/docs/generate-a-google-server-api-key)
 
 ### Custom Android icons
 

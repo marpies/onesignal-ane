@@ -20,7 +20,7 @@
 		C37A12791D3A3B7600FD0CF4 /* AreNotificationsEnabledFunction.m in Sources */ = {isa = PBXBuildFile; fileRef = C37A12781D3A3B7600FD0CF4 /* AreNotificationsEnabledFunction.m */; };
 		C37A127C1D3A44D700FD0CF4 /* AreNotificationsAvailableFunction.m in Sources */ = {isa = PBXBuildFile; fileRef = C37A127B1D3A44D700FD0CF4 /* AreNotificationsAvailableFunction.m */; };
 		C3B0B6E81D3CF9CF00E920AA /* PostNotificationFunction.m in Sources */ = {isa = PBXBuildFile; fileRef = C3B0B6E71D3CF9CF00E920AA /* PostNotificationFunction.m */; };
-		C3B188051D64764600C558BF /* OneSignal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C3B188041D64764600C558BF /* OneSignal.framework */; };
+		C3DB220F1D968F47005B84B3 /* OneSignal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C3DB220E1D968F47005B84B3 /* OneSignal.framework */; };
 		C3FE9B0B1D3E89DF009B5046 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C3FE9B0A1D3E89DF009B5046 /* SystemConfiguration.framework */; };
 /* End PBXBuildFile section */
 
@@ -64,7 +64,7 @@
 		C37A127B1D3A44D700FD0CF4 /* AreNotificationsAvailableFunction.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AreNotificationsAvailableFunction.m; sourceTree = "<group>"; };
 		C3B0B6E61D3CF9CE00E920AA /* PostNotificationFunction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PostNotificationFunction.h; sourceTree = "<group>"; };
 		C3B0B6E71D3CF9CF00E920AA /* PostNotificationFunction.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PostNotificationFunction.m; sourceTree = "<group>"; };
-		C3B188041D64764600C558BF /* OneSignal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OneSignal.framework; sourceTree = "<group>"; };
+		C3DB220E1D968F47005B84B3 /* OneSignal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OneSignal.framework; sourceTree = "<group>"; };
 		C3FE9B0A1D3E89DF009B5046 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -75,7 +75,7 @@
 			files = (
 				C3FE9B0B1D3E89DF009B5046 /* SystemConfiguration.framework in Frameworks */,
 				C350BA701D38190C000E7C5A /* AIRExtHelpers.framework in Frameworks */,
-				C3B188051D64764600C558BF /* OneSignal.framework in Frameworks */,
+				C3DB220F1D968F47005B84B3 /* OneSignal.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -159,7 +159,7 @@
 		C37509F81C79388900516C15 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				C3B188041D64764600C558BF /* OneSignal.framework */,
+				C3DB220E1D968F47005B84B3 /* OneSignal.framework */,
 				C350BA6F1D38190C000E7C5A /* AIRExtHelpers.framework */,
 			);
 			path = Frameworks;

@@ -61,22 +61,31 @@
 #endif
 
 /* The action type associated to an OSNotificationAction object */
-typedef enum : NSUInteger {
-    Opened,
-    ActionTaken
-} OSNotificationActionType;
+typedef NS_ENUM(NSUInteger, OSNotificationActionType)  {
+    OSNotificationActionTypeOpened,
+    OSNotificationActionTypeActionTaken
+} ;
 
 /* The way a notification was displayed to the user */
-typedef enum : NSUInteger {
-    /*iOS native notification display*/
-    Notification,
-
-    /*Default UIAlertView display*/
-    InAppAlert,
-    
+typedef NS_ENUM(NSUInteger, OSNotificationDisplayType) {
     /*Notification is silent, or app is in focus but InAppAlertNotifications are disabled*/
-    None
-} OSNotificationDisplayType;
+    OSNotificationDisplayTypeNone,
+    
+    /*Default UIAlertView display*/
+    OSNotificationDisplayTypeInAppAlert,
+    
+    /*iOS native notification display*/
+    OSNotificationDisplayTypeNotification
+} ;
+
+
+
+/* iOS 10+
+ Used as value type for `kOSSettingsKeyInFocusDisplayOption`
+ for setting the display option of a notification received while the app was in focus
+ */
+typedef OSNotificationDisplayType OSInFocusDisplayOption;
+
 
 @interface OSNotificationAction : NSObject
 
@@ -144,14 +153,27 @@ typedef enum : NSUInteger {
  requires remote-notification within UIBackgroundModes array of the Info.plist */
 @property(readonly, getter=isSilentNotification)BOOL silentNotification;
 
+/* iOS 10+: Indicates wether or not the received notification has mutableContent : 1 assigned to its payload
+ Used for UNNotificationServiceExtension to launch extension.
+*/
+#if XC8_AVAILABLE
+@property(readonly, getter=hasMutableContent)BOOL mutableContent;
+#endif
+
+/* Convert object into an NSString that can be convertible into a custom Dictionary / JSON Object */
+- (NSString*)stringify;
+
 @end
 
 
-@interface OSNotificationResult : NSObject
+@interface OSNotificationOpenedResult : NSObject
 
 @property(readonly)OSNotification* notification;
 
 @property(readonly)OSNotificationAction *action;
+
+/* Convert object into an NSString that can be convertible into a custom Dictionary / JSON Object */
+- (NSString*)stringify;
 
 @end;
 
@@ -165,7 +187,7 @@ typedef void (^OSIdsAvailableBlock)(NSString* userId, NSString* pushToken);
 typedef void (^OSHandleNotificationReceivedBlock)(OSNotification* notification);
 
 /*Block for handling a user reaction to a notification*/
-typedef void (^OSHandleNotificationActionBlock)(OSNotificationResult * result);
+typedef void (^OSHandleNotificationActionBlock)(OSNotificationOpenedResult * result);
 
 /*Dictionary of keys to pass alongside the init serttings*/
     
@@ -177,6 +199,12 @@ extern NSString * const kOSSettingsKeyInAppAlerts;
 
 /*Enable In-App display of Launch URLs*/
 extern NSString * const kOSSettingsKeyInAppLaunchURL;
+
+/* iOS10+ - 
+ Set notificaion's in-focus display option.
+ Value must be an OSNotificationDisplayType enum
+*/
+extern NSString * const kOSSettingsKeyInFocusDisplayOption;
 
 /**
     OneSignal provides a high level interface to interact with OneSignal's push service.
@@ -193,7 +221,7 @@ typedef NS_ENUM(NSUInteger, ONE_S_LOG_LEVEL) {
 };
 
 ///--------------------
-/// @name Initialize
+/// @name Initialize`
 ///--------------------
 
 /**
@@ -234,7 +262,6 @@ typedef NS_ENUM(NSUInteger, ONE_S_LOG_LEVEL) {
 + (void)IdsAvailable:(OSIdsAvailableBlock)idsAvailableBlock;
 
 // - Alerting
-// + (void)enableInAppAlertNotification:(BOOL)enable;
 + (void)setSubscription:(BOOL)enable;
 
 // - Posting Notification

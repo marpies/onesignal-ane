@@ -13,8 +13,8 @@ Development of this extension is supported by [Master Tigra, Inc.](https://githu
 
 ## Native SDK versions
 
-* iOS `v2.0.9`
-* Android `v3.0.2`
+* iOS `v2.1.12`
+* Android `v3.3.0`
 
 ## Getting started
 
@@ -107,6 +107,10 @@ For Android support, modify `manifestAdditions` element so that it contains the 
             <uses-permission android:name="com.anddoes.launcher.permission.UPDATE_COUNT"/>
             <!-- Solid -->
             <uses-permission android:name="com.majeur.launcher.permission.UPDATE_BADGE"/>
+            <!-- Huawei -->
+            <uses-permission android:name="com.huawei.android.launcher.permission.CHANGE_BADGE" />
+            <uses-permission android:name="com.huawei.android.launcher.permission.READ_SETTINGS" />
+            <uses-permission android:name="com.huawei.android.launcher.permission.WRITE_SETTINGS" />
             <!-- End: ShortcutBadger -->
 
             <application>
@@ -192,16 +196,14 @@ private function onNotificationReceived( notification:OneSignalNotification ):vo
 
 It is recommended to add the callback before initializing the extension to receive any notifications which result in launching your app.
 
-You can also add a callback to be notified when a push notification token is available:
+You can also add a callback to be notified when user's OneSignal identifier and push notification token is available:
 
 ```as3
-OneSignal.addTokenReceivedCallback( onPushTokenReceived );
+OneSignal.idsAvailable( onOneSignalIdsAvailable );
 ...
-private function onPushTokenReceived( oneSignalUserId:String, pushToken:String ):void {
-    if( pushToken != null ) {
-        OneSignal.removeTokenReceivedCallback( onPushTokenReceived );
-    }
+private function onOneSignalIdsAvailable( oneSignalUserId:String, pushToken:String ):void {
     // 'pushToken' may be null if there's a server or connection error
+    // callback is automatically removed when 'pushToken' is delivered
 }
 ```
 
@@ -292,6 +294,11 @@ ANT build scripts are available in the [build](build/) directory. Edit [build.pr
 The ANE has been written by [Marcel Piestansky](https://twitter.com/marpies) and is distributed under [Apache License, version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html).
 
 ## Changelog
+
+#### September 25, 2016 (v1.1.0)
+
+* REPLACED token available callback with `OneSignal.idsAvailable` method (see [Callbacks](#callbacks))
+* UPDATED OneSignal SDKs for both iOS (v2.1.12) and Android (v3.3.0)
 
 #### August 17, 2016 (v1.0.0)
 

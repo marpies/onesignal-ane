@@ -266,7 +266,7 @@ package com.marpies.ane.onesignal {
          *
          * <p>Extension must be initialized using <code>OneSignal.init()</code> before calling this method.</p>
          *
-         * @param parameters Notification options, see <a href="http://documentation.onesignal.com/v2.0/docs/notifications-create-notification">OneSignal create notification REST API</a>
+         * @param parameters Notification options, see <a href="https://documentation.onesignal.com/reference#page-create-notification">OneSignal create notification REST API</a>
          * @param callback Function with the following signature:
          * <listing version="3.0">
          * function callback( successResponse:Object, errorResponse:Object ):void {
@@ -278,7 +278,7 @@ package com.marpies.ane.onesignal {
          * };
          * </listing>
          *
-         * @see http://documentation.onesignal.com/v2.0/docs/notifications-create-notification OneSignal create notification REST API
+         * @see http://documentation.onesignal.com/reference#page-create-notification OneSignal create notification REST API
          */
         public static function postNotification( parameters:Object, callback:Function ):void {
             if( !isSupported ) return;

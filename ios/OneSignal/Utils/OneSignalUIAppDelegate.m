@@ -127,6 +127,11 @@ static NSString* const kPushOSDefaultsSubscriptionKey = @"pushos_subscription";
 }
 
 - (void) idsAvailable {
+    /* If autoRegister is disabled and idsAvailable is called then
+     * the identifiers may be dispatched because OneSignal SDK cached them.
+     * This behavior would differ from Android so we prevent that here. */
+    if( !mHasRegistered ) return;
+    
     [OneSignal IdsAvailable:^(NSString *userId, NSString *pushToken) {
         [AIROneSignal log:[NSString stringWithFormat:@"OneSignal::idsAvailable %@ | token: %@", userId, pushToken]];
         NSMutableDictionary* response = [NSMutableDictionary dictionary];

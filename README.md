@@ -175,7 +175,7 @@ You will need to create small icons in 4 sizes and replace the ones in the [andr
 
 The [xxhdpi directory](android/com.marpies.ane.onesignal-res/drawable-xxhdpi-v11/) also contains colorful large icon of size 192x192 pixels. This icon is displayed together with the small icon when the notification area is swiped down. You can delete the large icon, in which case only the small icon will show up.
 
-After you replace the icons, run `ant` from the [build directory](build/) to create updated extension package.
+After you replace the icons, run `ant swc android package` from the [build directory](build/) to create updated extension package, or just `ant` if you are using a Mac.
 
 Finally, add the [OneSignal ANE](bin/com.marpies.ane.onesignal.ane) or [SWC](bin/com.marpies.ane.onesignal.swc) package from the [bin directory](bin/) to your project so that your IDE can work with it. The additional Android library ANEs are only necessary during packaging.
 

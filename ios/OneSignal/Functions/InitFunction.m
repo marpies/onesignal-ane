@@ -22,7 +22,7 @@
 
 FREObject pushos_init( FREContext context, void* functionData, uint32_t argc, FREObject argv[] ) {
     /* Already initialized */
-    if( [[AIROneSignal sharedInstance] appDelegate] != nil ) return nil;
+    if( [[[AIROneSignal sharedInstance] appDelegate] isInitialized]) return nil;
     
     NSString* oneSignalAppId = [MPFREObjectUtils getNSString:argv[0]];
     BOOL autoRegister = [MPFREObjectUtils getBOOL:argv[1]];
@@ -35,8 +35,8 @@ FREObject pushos_init( FREContext context, void* functionData, uint32_t argc, FR
     }
     
     [AIROneSignal log:@"pushos_init"];
-    /* Initialize delegate */
-    OneSignalUIAppDelegate* delegate = [[OneSignalUIAppDelegate alloc] initWithOneSignalAppId:oneSignalAppId autoRegister:autoRegister enableInAppAlerts:enableInAppAlerts];
-    [[AIROneSignal sharedInstance] setAppDelegate:delegate];
+    /* Start the delegate */
+    [[[AIROneSignal sharedInstance] appDelegate] startWithOneSignalAppId:oneSignalAppId autoRegister:autoRegister enableInAppAlerts:enableInAppAlerts];
+
     return nil;
 }

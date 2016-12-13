@@ -25,44 +25,51 @@ static NSString* const kPushOSDefaultsSubscriptionKey = @"pushos_subscription";
 
 @implementation OneSignalUIAppDelegate {
     BOOL mHasRegistered;
+    BOOL mInitialized;
 }
 
 #pragma mark - Public
 
-- (id) initWithOneSignalAppId:(NSString*) oneSignalAppId autoRegister:(BOOL) autoRegister enableInAppAlerts:(BOOL) enableInAppAlerts {
+- (id) init {
     self = [super init];
     if( self ) {
-        if( !autoRegister ) {
-            [AIROneSignal log:@"Auto register is disabled"];
-        }
-        /* Initialize OneSignal */
-        mHasRegistered = autoRegister;
-        
-        OSNotificationDisplayType inFocusDisplayType = enableInAppAlerts ? OSNotificationDisplayTypeInAppAlert : OSNotificationDisplayTypeNone;
-        [OneSignal initWithLaunchOptions:[MPUIApplicationDelegate launchOptions] appId:oneSignalAppId handleNotificationReceived:^(OSNotification *notification) {
-            [AIROneSignal log:@"OneSignalUIAppDelegate::handleNotificationReceived"];
-            /* Notification in this handler will only be dispatched to AIR if the app is in focus,
-             * otherwise we'll wait for user interaction and the notification will be handled in 'handleNotificationAction' */
-            if( notification.displayType == OSNotificationDisplayTypeNone ) {
-                [AIROneSignal log:@"Received notification while app is active, dispatching."];
-                [self dispatchNotification:[self getJSONForNotification:notification]];
-            } else {
-                [AIROneSignal log:@"Received notification while in background, waiting for user interaction."];
-            }
-        } handleNotificationAction:^(OSNotificationOpenedResult *result) {
-            [AIROneSignal log:@"OneSignalUIAppDelegate::handleNotificationAction"];
-            [self dispatchNotification:[self getJSONForNotification:result.notification notificationAction:result.action]];
-        } settings:@{
-                     kOSSettingsKeyInAppAlerts: @(enableInAppAlerts),
-                     kOSSettingsKeyAutoPrompt: @(autoRegister),
-                     kOSSettingsKeyInFocusDisplayOption: @(inFocusDisplayType)
-                    }];
-        
-        if( autoRegister ) {
-            [self idsAvailable];
-        }
+        mHasRegistered = NO;
+        mInitialized = NO;
     }
     return self;
+}
+
+- (void) startWithOneSignalAppId:(NSString*) oneSignalAppId autoRegister:(BOOL) autoRegister enableInAppAlerts:(BOOL) enableInAppAlerts {
+    mInitialized = YES;
+    if( !autoRegister ) {
+        [AIROneSignal log:@"Auto register is disabled"];
+    }
+    /* Initialize OneSignal */
+    mHasRegistered = autoRegister;
+    
+    OSNotificationDisplayType inFocusDisplayType = enableInAppAlerts ? OSNotificationDisplayTypeInAppAlert : OSNotificationDisplayTypeNone;
+    [OneSignal initWithLaunchOptions:[MPUIApplicationDelegate launchOptions] appId:oneSignalAppId handleNotificationReceived:^(OSNotification *notification) {
+        [AIROneSignal log:@"OneSignalUIAppDelegate::handleNotificationReceived"];
+        /* Notification in this handler will only be dispatched to AIR if the app is in focus,
+         * otherwise we'll wait for user interaction and the notification will be handled in 'handleNotificationAction' */
+        if( notification.displayType == OSNotificationDisplayTypeNone ) {
+            [AIROneSignal log:@"Received notification while app is active, dispatching."];
+            [self dispatchNotification:[self getJSONForNotification:notification]];
+        } else {
+            [AIROneSignal log:@"Received notification while in background, waiting for user interaction."];
+        }
+    } handleNotificationAction:^(OSNotificationOpenedResult *result) {
+        [AIROneSignal log:@"OneSignalUIAppDelegate::handleNotificationAction"];
+        [self dispatchNotification:[self getJSONForNotification:result.notification notificationAction:result.action]];
+    } settings:@{
+                 kOSSettingsKeyInAppAlerts: @(enableInAppAlerts),
+                 kOSSettingsKeyAutoPrompt: @(autoRegister),
+                 kOSSettingsKeyInFocusDisplayOption: @(inFocusDisplayType)
+                 }];
+    
+    if( autoRegister ) {
+        [self idsAvailable];
+    }
 }
 
 - (void) registerForPushNotifications {
@@ -143,6 +150,10 @@ static NSString* const kPushOSDefaultsSubscriptionKey = @"pushos_subscription";
         }
         [AIROneSignal dispatchEvent:OS_TOKEN_RECEIVED withMessage:[MPStringUtils getJSONString:response]];
     }];
+}
+
+- (BOOL) isInitialized {
+    return mInitialized;
 }
 
 

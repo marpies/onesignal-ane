@@ -38,6 +38,7 @@ static AIROneSignal* AIROneSignalSharedInstance = nil;
 + (id) sharedInstance {
     if( AIROneSignalSharedInstance == nil ) {
         AIROneSignalSharedInstance = [[AIROneSignal alloc] init];
+        [AIROneSignalSharedInstance setAppDelegate:[[OneSignalUIAppDelegate alloc] init]];
     }
     return AIROneSignalSharedInstance;
 }

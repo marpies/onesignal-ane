@@ -301,6 +301,11 @@ The ANE has been written by [Marcel Piestansky](https://twitter.com/marpies) and
 
 ## Changelog
 
+#### December 14, 2016 (v1.1.1)
+
+* UPDATED delegate initialization on iOS
+  * Fixes incorrect `areNotificationsEnabled` value before the ANE is initialized
+
 #### September 25, 2016 (v1.1.0)
 
 * REPLACED token available callback with `OneSignal.idsAvailable` method (see [Callbacks](#callbacks))

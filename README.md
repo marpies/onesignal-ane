@@ -226,7 +226,7 @@ OneSignal.settings
 
 All these values default to `false` and changing them after the extension is initialized has no effect.
 
-Now proceed with ANE initialization by providing your OneSignal app ID. The `init` method should be called in your document class' constructor, or as early as possible after your app's launch.
+Now proceed with ANE initialization. The `init` method should be called in your document class' constructor, or as early as possible after your app's launch. Replace `{ONE-SIGNAL-APP-ID}` with your OneSignal app ID:
 
 ```as3
 if( OneSignal.init( "{ONE-SIGNAL-APP-ID}" ) ) {

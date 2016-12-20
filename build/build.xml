@@ -41,9 +41,6 @@
         <copy todir="temp/ios/AIRExtHelpers.framework" overwrite="true">
             <fileset dir="../ios/OneSignal/Frameworks/AIRExtHelpers.framework"/>
         </copy>
-        <copy todir="temp/ios/OneSignal.framework" overwrite="true">
-            <fileset dir="../ios/OneSignal/Frameworks/OneSignal.framework"/>
-        </copy>
 
         <!-- remove the build directory -->
         <delete dir="temp/ios/build/"/>

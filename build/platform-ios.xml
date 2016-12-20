@@ -6,6 +6,5 @@
 
     <packagedDependencies>
         <packagedDependency>AIRExtHelpers.framework</packagedDependency>
-        <packagedDependency>OneSignal.framework</packagedDependency>
     </packagedDependencies>
 </platform>

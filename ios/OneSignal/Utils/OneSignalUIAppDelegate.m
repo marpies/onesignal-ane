@@ -20,6 +20,7 @@
 #import <AIRExtHelpers/MPUIApplicationDelegate.h>
 #import <AIRExtHelpers/MPStringUtils.h>
 #import "OneSignalEvent.h"
+#import "OneSignalHelper.h"
 
 static NSString* const kPushOSDefaultsSubscriptionKey = @"pushos_subscription";
 
@@ -47,8 +48,10 @@ static NSString* const kPushOSDefaultsSubscriptionKey = @"pushos_subscription";
     /* Initialize OneSignal */
     mHasRegistered = autoRegister;
     
+    NSDictionary* launchOptions = [MPUIApplicationDelegate launchOptions];
+
     OSNotificationDisplayType inFocusDisplayType = enableInAppAlerts ? OSNotificationDisplayTypeInAppAlert : OSNotificationDisplayTypeNone;
-    [OneSignal initWithLaunchOptions:[MPUIApplicationDelegate launchOptions] appId:oneSignalAppId handleNotificationReceived:^(OSNotification *notification) {
+    [OneSignal initWithLaunchOptions:launchOptions appId:oneSignalAppId handleNotificationReceived:^(OSNotification *notification) {
         [AIROneSignal log:@"OneSignalUIAppDelegate::handleNotificationReceived"];
         /* Notification in this handler will only be dispatched to AIR if the app is in focus,
          * otherwise we'll wait for user interaction and the notification will be handled in 'handleNotificationAction' */
@@ -67,6 +70,12 @@ static NSString* const kPushOSDefaultsSubscriptionKey = @"pushos_subscription";
                  kOSSettingsKeyInFocusDisplayOption: @(inFocusDisplayType)
                  }];
     
+    /* Manually dispatch the notification from cold start */
+    if( (launchOptions != nil) && launchOptions[UIApplicationLaunchOptionsRemoteNotificationKey] ) {
+        [OneSignalHelper lastMessageReceived:launchOptions[UIApplicationLaunchOptionsRemoteNotificationKey]];
+        [OneSignalHelper handleNotificationReceived:OSNotificationDisplayTypeNone];
+    }
+
     if( autoRegister ) {
         [self idsAvailable];
     }

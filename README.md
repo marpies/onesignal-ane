@@ -13,8 +13,8 @@ Development of this extension is supported by [Master Tigra, Inc.](https://githu
 
 ## Native SDK versions
 
-* iOS `v2.1.12`
-* Android `v3.3.0`
+* iOS `v2.3.4`
+* Android `v3.4.2`
 
 ## AIR SDK note
 
@@ -300,6 +300,11 @@ ANT build scripts are available in the [build](build/) directory. Edit [build.pr
 The ANE has been written by [Marcel Piestansky](https://twitter.com/marpies) and is distributed under [Apache License, version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html).
 
 ## Changelog
+
+#### December 20, 2016 (v1.2.0)
+
+* UPDATED OneSignal SDKs for both iOS (v2.3.4) and Android (v3.4.2)
+* FIXED dispatch of notification on cold start from notification tap (iOS)
 
 #### December 14, 2016 (v1.1.1)
 

@@ -16,7 +16,7 @@
 
 #import "GetSDKVersionFunction.h"
 #import <AIRExtHelpers/MPFREObjectUtils.h>
-#import <OneSignal/OneSignal.h>
+#import "OneSignal.h"
 
 FREObject pushos_sdkVersion( FREContext context, void* functionData, uint32_t argc, FREObject argv[] ) {
     return [MPFREObjectUtils getFREObjectFromNSString:ONESIGNAL_VERSION];

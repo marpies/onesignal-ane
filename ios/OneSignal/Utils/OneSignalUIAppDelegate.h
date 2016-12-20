@@ -15,9 +15,8 @@
  */
 
 #import <Foundation/Foundation.h>
-#import <AIRExtHelpers/MPUIApplicationListener.h>
 
-@interface OneSignalUIAppDelegate : NSObject<MPUIApplicationListener>
+@interface OneSignalUIAppDelegate : NSObject
 
 - (void) startWithOneSignalAppId:(NSString*) oneSignalAppId autoRegister:(BOOL) autoRegister enableInAppAlerts:(BOOL) enableInAppAlerts;
 - (void) registerForPushNotifications;

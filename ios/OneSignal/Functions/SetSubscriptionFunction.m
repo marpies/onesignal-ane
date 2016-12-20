@@ -16,7 +16,7 @@
 
 #import "SetSubscriptionFunction.h"
 #import <AIRExtHelpers/MPFREObjectUtils.h>
-#import <OneSignal/OneSignal.h>
+#import "OneSignal.h"
 #import "AIROneSignal.h"
 
 FREObject pushos_setSubscription( FREContext context, void* functionData, uint32_t argc, FREObject argv[] ) {

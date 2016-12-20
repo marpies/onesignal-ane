@@ -18,7 +18,7 @@
 #import "InitFunction.h"
 #import "OneSignalUIAppDelegate.h"
 #import <AIRExtHelpers/MPFREObjectUtils.h>
-#import <OneSignal/OneSignal.h>
+#import "OneSignal.h"
 
 FREObject pushos_init( FREContext context, void* functionData, uint32_t argc, FREObject argv[] ) {
     /* Already initialized */

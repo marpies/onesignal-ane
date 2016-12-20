@@ -16,7 +16,7 @@
 
 #import "OneSignalUIAppDelegate.h"
 #import "AIROneSignal.h"
-#import <OneSignal/OneSignal.h>
+#import "OneSignal.h"
 #import <AIRExtHelpers/MPUIApplicationDelegate.h>
 #import <AIRExtHelpers/MPStringUtils.h>
 #import "OneSignalEvent.h"

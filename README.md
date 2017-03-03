@@ -4,6 +4,8 @@
 
 Development of this extension is supported by [Master Tigra, Inc.](https://github.com/mastertigra)
 
+**This branch adds support for iOS 10 media included in notifications. Additional steps are required to make it work in your AIR app, see [Packaging your app](#packaging-your-app).**
+
 ## Features
 
 * Receiving push notifications sent from [OneSignal dashboard](https://onesignal.com/)
@@ -16,15 +18,10 @@ Development of this extension is supported by [Master Tigra, Inc.](https://githu
 * iOS `v2.3.4`
 * Android `v3.4.2`
 
-## AIR SDK note
-
-Including this and other extensions in your app increases the number of method references that must be stored in Android dex file. AIR currently supports a single dex file and since the number of such references is limited to a little over 65k, it is possible to exceed the limit by including several native extensions. This will prohibit you from building your app for Android, unless you reduce the number of features the app provides. Please, leave a vote in the report below to help adding multidex support to AIR SDK:
-
-* [Bug 4190396 - Multidex support for Adobe AIR](https://bugbase.adobe.com/index.cfm?event=bug&id=4190396)
-
 ## Getting started
 
 Create an app in the [OneSignal dashboard](https://onesignal.com/). Single OneSignal app can be configured for both iOS and Android.
+
 * To support Android, follow the [tutorial on how to obtain necessary information from Google](https://documentation.onesignal.com/docs/generate-a-google-server-api-key).
 * To support iOS, follow the [tutorial on how to properly setup your iOS certificates and provisioning profiles](https://documentation.onesignal.com/docs/generate-an-ios-push-certificate).
 
@@ -164,6 +161,7 @@ For Android support, modify `manifestAdditions` element so that it contains the 
 ```
 
 In the snippet above, replace:
+
 * `{APP-PACKAGE-NAME}` with your app package name (value of `id` element in your AIR app descriptor). Remember it's prefixed with `air.` when packaged by AIR SDK, unless you knowingly prevent this.
 * `{ONE-SIGNAL-APP-ID}` with your OneSignal app id
 * `{GOOGLE-SENDER-ID}` with your Google Sender ID (also known as Google Project Number) obtained from [the tutorial](https://documentation.onesignal.com/docs/generate-a-google-server-api-key)
@@ -181,9 +179,21 @@ You will need to create small icons in 4 sizes and replace the ones in the [andr
 
 The [xxhdpi directory](android/com.marpies.ane.onesignal-res/drawable-xxhdpi-v11/) also contains colorful large icon of size 192x192 pixels. This icon is displayed together with the small icon when the notification area is swiped down. You can delete the large icon, in which case only the small icon will show up.
 
-After you replace the icons, run `ant swc android package` from the [build directory](build/) to create updated extension package, or just `ant` if you are using a Mac.
+After you replace the icons, run `ant swc android package` from the [build directory](build/) to create updated extension package.
 
 Finally, add the [OneSignal ANE](bin/com.marpies.ane.onesignal.ane) or [SWC](bin/com.marpies.ane.onesignal.swc) package from the [bin directory](bin/) to your project so that your IDE can work with it. The additional Android library ANEs are only necessary during packaging.
+
+### Packaging your app
+
+If you are using AIR 24 and older, you need to have Xcode 8 installed and make the following change to your AIR SDK installation:
+
+    cd {AIR_SDK}/lib/aot/bin/ld64
+    mv ld64 ld64_air
+    ln -s /usr/bin/ld ld64
+
+When you package IPA for iOS, you need to provide location to iOS 10 SDK (typically part of Xcode installation) using the `-platformsdk` option in `adt` or via corresponding UI of your IDE:
+
+    -platformsdk /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS10.2.sdk
 
 ### API overview
 

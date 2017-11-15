@@ -103,6 +103,7 @@ For Android support, modify `manifestAdditions` element so that it contains the 
             <uses-permission android:name="com.htc.launcher.permission.UPDATE_SHORTCUT"/>
             <!-- Sony -->
             <uses-permission android:name="com.sonyericsson.home.permission.BROADCAST_BADGE"/>
+            <uses-permission android:name="com.sonymobile.home.permission.PROVIDER_INSERT_BADGE"/>
             <!-- Apex -->
             <uses-permission android:name="com.anddoes.launcher.permission.UPDATE_COUNT"/>
             <!-- Solid -->

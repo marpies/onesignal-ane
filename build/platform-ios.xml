@@ -2,6 +2,7 @@
     <linkerOptions>
         <option>-ios_version_min 7.0</option>
         <option>-framework SystemConfiguration</option>
+        <option>-weak_framework UserNotifications</option>
     </linkerOptions>
 
     <packagedDependencies>

@@ -158,7 +158,7 @@ public class OneSignalListener implements OneSignal.NotificationOpenedHandler, O
 
 	private JSONObject getJSONForNotificationPayload( OSNotificationPayload payload, boolean isAppInFocus, JSONObject out ) {
 		JSONObject json = (out == null) ? new JSONObject() : out;
-		String message = (payload.groupMessage != null) ? payload.groupMessage : payload.body;
+        String message = (payload.body != null) ? payload.body : "";
 		addValueForKey( json, "message", message );
 		addValueForKey( json, "isActive", isAppInFocus );
 		if( payload.title != null ) {

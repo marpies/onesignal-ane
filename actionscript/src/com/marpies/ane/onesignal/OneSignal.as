@@ -115,6 +115,16 @@ package com.marpies.ane.onesignal {
         }
 
         /**
+         * Removes all OneSignal notifications from the Notification Shade.
+         */
+        public static function clearOneSignalNotifications():void {
+            if( !isSupported ) return;
+            validateExtensionContext();
+
+            mContext.call( "clearNotifications" );
+        }
+
+        /**
          * You can call this method with <code>false</code> to opt users out of receiving all notifications
          * through OneSignal. You can pass <code>true</code> later to opt users back into notifications.
          * Extension must be initialized using <code>OneSignal.init()</code> before calling this method.

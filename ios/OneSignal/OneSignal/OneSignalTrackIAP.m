@@ -33,6 +33,8 @@
 @implementation OneSignalTrackIAP
 
 static Class skPaymentQueue;
+static Class sKProductsRequestClass;
+static id productsRequest;
 NSMutableDictionary* skusToTrack;
 
 // NSClassFromString and performSelector are used so OneSignal does not depend on StoreKit to link the app.
@@ -55,6 +57,19 @@ NSMutableDictionary* skusToTrack;
         [[skPaymentQueue performSelector:@selector(defaultQueue)] performSelector:@selector(addTransactionObserver:) withObject:self];
     
     return self;
+}
+
+- (void)dealloc {
+  if (skPaymentQueue) {
+    [[skPaymentQueue performSelector:@selector(defaultQueue)] performSelector:@selector(removeTransactionObserver:) withObject:self];
+      if (productsRequest) {
+          [productsRequest setDelegate:nil];
+          SEL selector = NSSelectorFromString(@"cancel");
+          ((void (*)(id, SEL))[productsRequest methodForSelector:selector])(productsRequest, selector);
+          
+          productsRequest = nil;
+      }
+  }
 }
 
 - (void)paymentQueue:(id)queue updatedTransactions:(NSArray*)transactions {
@@ -83,11 +98,11 @@ NSMutableDictionary* skusToTrack;
 
 
 - (void)getProductInfo:(NSArray*)productIdentifiers {
-    Class SKProductsRequestClass = NSClassFromString(@"SKProductsRequest");
-    id productsRequest = [[SKProductsRequestClass alloc] performSelector:@selector(initWithProductIdentifiers:) withObject:[NSSet setWithArray:productIdentifiers]];
+    sKProductsRequestClass = NSClassFromString(@"SKProductsRequest");
+    productsRequest = [[sKProductsRequestClass alloc] performSelector:@selector(initWithProductIdentifiers:) withObject:[NSSet setWithArray:productIdentifiers]];
     [productsRequest setDelegate:(id)self];
     
-    //[productsRequest performSelector:NSSelectorFromString(@"start")];
+    // [productsRequest performSelector:NSSelectorFromString(@"start")];
     SEL selector = NSSelectorFromString(@"start");
     ((void (*)(id, SEL))[productsRequest methodForSelector:selector])(productsRequest, selector);
 }

@@ -1,7 +1,7 @@
 /**
  * Modified MIT License
  *
- * Copyright 2016 OneSignal
+ * Copyright 2017 OneSignal
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,13 +26,15 @@
  */
 
 #import <Foundation/Foundation.h>
-#import <UIKit/UIKit.h>
 
+#import "OneSignal.h"
 
-@interface OneSignalAlertView : NSObject
-+ (void)showInAppAlert:(NSDictionary*)messageDict;
-@end
+@interface OneSignalTrackFirebaseAnalytics : NSObject
++(BOOL)needsRemoteParams;
++(void)init;
++(void)updateFromDownloadParams:(NSDictionary*)params;
 
-@interface OneSignalAlertViewDelegate : NSObject <UIAlertViewDelegate>
-- (id)initWithMessageDict:(NSDictionary*)messageDict;
++(void)trackOpenEvent:(OSNotificationOpenedResult*)results;
++(void)trackReceivedEvent:(OSNotificationPayload*)notification;
++(void)trackInfluenceOpenEvent;
 @end

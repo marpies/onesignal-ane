@@ -27,13 +27,49 @@
 
 #import "OneSignalAlertViewDelegate.h"
 #import "OneSignal.h"
+#import "OneSignalHelper.h"
+#import "OSNotificationPayload+Internal.h"
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 
 @interface OneSignal ()
-+ (void) handleNotificationOpened:(NSDictionary*)messageDict isActive:(BOOL)isActive actionType : (OSNotificationActionType)actionType displayType:(OSNotificationDisplayType)displayType;
++ (void)handleNotificationOpened:(NSDictionary*)messageDict
+                        isActive:(BOOL)isActive
+                      actionType:(OSNotificationActionType)actionType
+                     displayType:(OSNotificationDisplayType)displayType;
 @end
+
+
+@implementation OneSignalAlertView
+
++ (void)showInAppAlert:(NSDictionary*)messageDict {
+    let payload = [OSNotificationPayload parseWithApns:messageDict];
+    
+    id oneSignalAlertViewDelegate = [[OneSignalAlertViewDelegate alloc]
+                                         initWithMessageDict:messageDict];
+
+    let alertView = [[UIAlertView alloc]
+                     initWithTitle:payload.title
+                     message:payload.body
+                     delegate:oneSignalAlertViewDelegate
+                     cancelButtonTitle:NSLocalizedString(@"Close", nil)
+                     otherButtonTitles:nil, nil];
+    // Add Buttons
+    if (payload.actionButtons) {
+        for(id button in payload.actionButtons)
+            [alertView addButtonWithTitle:button[@"text"]];
+    }
+
+    [alertView show];
+    
+    // Message received that was displayed (Foreground + InAppAlert is true)
+    // Call Received Block
+    [OneSignalHelper handleNotificationReceived:OSNotificationDisplayTypeInAppAlert];
+}
+
+@end
+
 
 @implementation OneSignalAlertViewDelegate
 
@@ -51,8 +87,6 @@ static NSMutableArray* delegateReference;
     
     [delegateReference addObject:self];
     
-
-    
     return self;
 }
 
@@ -66,8 +100,14 @@ static NSMutableArray* delegateReference;
         
         NSMutableDictionary* userInfo = [mMessageDict mutableCopy];
 
-        if (mMessageDict[@"os_data"])
-            userInfo[@"actionSelected"] = mMessageDict[@"os_data"][@"buttons"][@"o"][buttonIndex - 1][@"i"];
+        if (mMessageDict[@"os_data"]) {
+            if ([mMessageDict[@"os_data"][@"buttons"] isKindOfClass:[NSDictionary class]])
+                userInfo[@"actionSelected"] = mMessageDict[@"os_data"][@"buttons"][@"o"][buttonIndex - 1][@"i"];
+            else
+                userInfo[@"actionSelected"] = mMessageDict[@"os_data"][@"buttons"][buttonIndex - 1][@"i"];
+        }
+        else if (mMessageDict[@"buttons"])
+             userInfo[@"actionSelected"] = mMessageDict[@"buttons"][buttonIndex - 1][@"i"];
         else {
             NSMutableDictionary* customDict = [userInfo[@"custom"] mutableCopy];
             NSMutableDictionary* additionalData = [[NSMutableDictionary alloc] initWithDictionary:customDict[@"a"]];

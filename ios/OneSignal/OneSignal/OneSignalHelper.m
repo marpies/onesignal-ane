@@ -1,7 +1,7 @@
 /**
  * Modified MIT License
  *
- * Copyright 2016 OneSignal
+ * Copyright 2017 OneSignal
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,6 +32,9 @@
 
 #import "OneSignalReachability.h"
 #import "OneSignalHelper.h"
+#import "OSNotificationPayload+Internal.h"
+
+#import "OneSignalTrackFirebaseAnalytics.h"
 
 #import <objc/runtime.h>
 
@@ -45,6 +48,82 @@
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
+
+
+@interface DirectDownloadDelegate : NSObject {
+    NSError* error;
+    NSURLResponse* response;
+    BOOL done;
+    NSFileHandle* outputHandle;
+}
+@property (readonly, getter=isDone) BOOL done;
+@property (readonly) NSError* error;
+@property (readonly) NSURLResponse* response;
+
+@end
+
+@implementation DirectDownloadDelegate
+@synthesize error, response, done;
+
+- (id)initWithFilePath:(NSString*)path {
+    if (self = [super init]) {
+        if ([[NSFileManager defaultManager] fileExistsAtPath:path])
+            [[NSFileManager defaultManager] removeItemAtPath:path error:nil];
+        
+        [[NSFileManager defaultManager] createFileAtPath:path contents:nil attributes:nil];
+        outputHandle = [NSFileHandle fileHandleForWritingAtPath:path];
+    }
+    return self;
+}
+
+- (void)connection:(NSURLConnection *)connection didFailWithError:(NSError*)anError {
+    error = anError;
+    [self connectionDidFinishLoading:connection];
+}
+
+- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData*)someData {
+    [outputHandle writeData:someData];
+}
+
+- (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse*)aResponse {
+    response = aResponse;
+}
+
+- (void)connectionDidFinishLoading:(NSURLConnection *)connection {
+    done = YES;
+    [outputHandle closeFile];
+}
+@end
+
+
+
+@interface NSURLConnection (DirectDownload)
++ (BOOL)downloadItemAtURL:(NSURL*)url toFile:(NSString*)localPath error:(NSError*)error;
+@end
+
+@implementation NSURLConnection (DirectDownload)
+
++ (BOOL)downloadItemAtURL:(NSURL*)url toFile:(NSString *)localPath error:(NSError*)error {
+    NSMutableURLRequest* request = [[NSMutableURLRequest alloc] initWithURL:url];
+    
+    DirectDownloadDelegate* delegate = [[DirectDownloadDelegate alloc] initWithFilePath:localPath];
+    [NSURLConnection connectionWithRequest:request delegate:delegate];
+    
+    while ([delegate isDone] == NO) {
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1.0]];
+    }
+    
+    NSError* downloadError = [delegate error];
+    if (downloadError != nil) {
+        if (error != nil)
+            error = downloadError;
+        return NO;
+    }
+    
+    return YES;
+}
+@end
 
 @interface UIApplication (Swizzling)
 +(Class)delegateClass;
@@ -64,96 +143,9 @@
 
 @end
 
-@implementation OSNotificationPayload
-@synthesize actionButtons = _actionButtons, additionalData = _additionalData, badge = _badge, body = _body, contentAvailable = _contentAvailable, notificationID = _notificationID, launchURL = _launchURL, rawPayload = _rawPayload, sound = _sound, subtitle = _subtitle, title = _title, attachments = _attachments;
-
-- (id)initWithRawMessage:(NSDictionary*)message {
-    self = [super init];
-    if (self && message) {
-        _rawPayload = [NSDictionary dictionaryWithDictionary:message];
-        
-        if (_rawPayload[@"aps"][@"content-available"])
-            _contentAvailable = (BOOL)_rawPayload[@"aps"][@"content-available"];
-        else
-            _contentAvailable = NO;
-        
-        if (_rawPayload[@"aps"][@"badge"])
-            _badge = (int)_rawPayload[@"aps"][@"badge"];
-        else _badge = (int)_rawPayload[@"badge"];
-        
-        _actionButtons = _rawPayload[@"o"];
-        if (!_actionButtons)
-            _actionButtons = _rawPayload[@"os_data"][@"buttons"][@"o"];
-        
-        if(_rawPayload[@"aps"][@"sound"])
-            _sound = _rawPayload[@"aps"][@"sound"];
-        else if(_rawPayload[@"s"])
-            _sound = _rawPayload[@"s"];
-        else
-            _sound = _rawPayload[@"os_data"][@"buttons"][@"s"];
-        
-        if(_rawPayload[@"custom"]) {
-            NSDictionary * custom = _rawPayload[@"custom"];
-            if (custom[@"a"])
-                _additionalData = [custom[@"a"] copy];
-            _notificationID = custom[@"i"];
-            _launchURL = custom[@"u"];
-            
-            _attachments = [_rawPayload[@"at"] copy];
-        }
-        else if(_rawPayload[@"os_data"]) {
-            NSDictionary * os_data = _rawPayload[@"os_data"];
-            
-            NSMutableDictionary *additional = [_rawPayload mutableCopy];
-            [additional removeObjectForKey:@"aps"];
-            [additional removeObjectForKey:@"os_data"];
-            _additionalData = [[NSDictionary alloc] initWithDictionary:additional];
-            
-            _notificationID = os_data[@"i"];
-            _launchURL = os_data[@"u"];
-            
-            if(os_data[@"buttons"][@"at"])
-                _attachments = [os_data[@"buttons"][@"at"] copy];
-        }
-        
-        if(_rawPayload[@"m"]) {
-            id m = _rawPayload[@"m"];
-            if ([m isKindOfClass:[NSDictionary class]]) {
-                _body = m[@"body"];
-                _title = m[@"title"];
-                _subtitle = m[@"subtitle"];
-            }
-            else
-                _body = m;
-        }
-        else if(_rawPayload[@"aps"][@"alert"]) {
-            id a = message[@"aps"][@"alert"];
-            if ([a isKindOfClass:[NSDictionary class]]) {
-                _body = a[@"body"];
-                _title = a[@"title"];
-                _subtitle = a[@"subtitle"];
-            }
-            else
-                _body = a;
-        }
-        else if(_rawPayload[@"os_data"][@"buttons"][@"m"]) {
-            NSDictionary * m = _rawPayload[@"os_data"][@"buttons"][@"m"];
-            _body = m[@"body"];
-            _title = m[@"title"];
-            _subtitle = m[@"subtitle"];
-        }
-    }
-    
-    return self;
-}
-@end
-
 @implementation OSNotification
 @synthesize payload = _payload, shown = _shown, isAppInFocus = _isAppInFocus, silentNotification = _silentNotification, displayType = _displayType;
-
-#if XC8_AVAILABLE
 @synthesize mutableContent = _mutableContent;
-#endif
 
 - (id)initWithPayload:(OSNotificationPayload *)payload displayType:(OSNotificationDisplayType)displayType {
     self = [super init];
@@ -164,9 +156,7 @@
         
         _silentNotification = [OneSignalHelper isRemoteSilentNotification:payload.rawPayload];
         
-#if XC8_AVAILABLE
         _mutableContent = payload.rawPayload[@"aps"][@"mutable-content"] && [payload.rawPayload[@"aps"][@"mutable-content"] isEqual: @YES];
-#endif
         
         _shown = true;
         
@@ -175,7 +165,7 @@
         //If remote silent -> shown = false
         //If app is active and in-app alerts are not enabled -> shown = false
         if (_silentNotification ||
-            (_isAppInFocus && [[NSUserDefaults standardUserDefaults] boolForKey:@"ONESIGNAL_ALERT_OPTION"] == OSNotificationDisplayTypeNone))
+            (_isAppInFocus && OneSignal.inFocusDisplayType == OSNotificationDisplayTypeNone))
             _shown = false;
         
     }
@@ -183,43 +173,43 @@
 }
 
 - (NSString*)stringify {
-    
-    NSMutableDictionary * obj = [NSMutableDictionary new];
+    let obj = [NSMutableDictionary new];
     [obj setObject:[NSMutableDictionary new] forKeyedSubscript:@"payload"];
-    if(self.payload.notificationID)
+    
+    if (self.payload.notificationID)
         [obj[@"payload"] setObject:self.payload.notificationID forKeyedSubscript: @"notificationID"];
     
-    if(self.payload.sound)
+    if (self.payload.sound)
         [obj[@"payload"] setObject:self.payload.sound forKeyedSubscript: @"sound"];
     
-    if(self.payload.title)
+    if (self.payload.title)
         [obj[@"payload"] setObject:self.payload.title forKeyedSubscript: @"title"];
     
-    if(self.payload.body)
+    if (self.payload.body)
         [obj[@"payload"] setObject:self.payload.body forKeyedSubscript: @"body"];
     
-    if(self.payload.subtitle)
+    if (self.payload.subtitle)
         [obj[@"payload"] setObject:self.payload.subtitle forKeyedSubscript: @"subtitle"];
     
-    if(self.payload.additionalData)
+    if (self.payload.additionalData)
         [obj[@"payload"] setObject:self.payload.additionalData forKeyedSubscript: @"additionalData"];
     
-    if(self.payload.actionButtons)
+    if (self.payload.actionButtons)
         [obj[@"payload"] setObject:self.payload.actionButtons forKeyedSubscript: @"actionButtons"];
     
-    if(self.payload.rawPayload)
+    if (self.payload.rawPayload)
         [obj[@"payload"] setObject:self.payload.rawPayload forKeyedSubscript: @"rawPayload"];
     
-    if(self.payload.launchURL)
+    if (self.payload.launchURL)
         [obj[@"payload"] setObject:self.payload.launchURL forKeyedSubscript: @"launchURL"];
     
-    if(self.payload.contentAvailable)
+    if (self.payload.contentAvailable)
         [obj[@"payload"] setObject:@(self.payload.contentAvailable) forKeyedSubscript: @"contentAvailable"];
     
-    if(self.payload.badge)
+    if (self.payload.badge)
         [obj[@"payload"] setObject:@(self.payload.badge) forKeyedSubscript: @"badge"];
     
-    if(self.displayType)
+    if (self.displayType)
         [obj setObject:@(self.displayType) forKeyedSubscript: @"displayType"];
     
     
@@ -229,10 +219,9 @@
     if (self.silentNotification)
         [obj setObject:@(self.silentNotification) forKeyedSubscript: @"silentNotification"];
     
-    
     //Convert obj into a serialized
-    NSError * err;
-    NSData * jsonData = [NSJSONSerialization  dataWithJSONObject:obj options:0 error:&err];
+    NSError *err;
+    NSData *jsonData = [NSJSONSerialization  dataWithJSONObject:obj options:0 error:&err];
     return [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
 }
 
@@ -276,6 +265,11 @@
 
 @implementation OneSignalHelper
 
++ (void)resetLocals {
+    [OneSignalHelper lastMessageReceived:nil];
+    _lastMessageIdFromAction = nil;
+}
+
 UIBackgroundTaskIdentifier mediaBackgroundTask;
 
 + (void) beginBackgroundMediaTask {
@@ -289,9 +283,6 @@ UIBackgroundTaskIdentifier mediaBackgroundTask;
     mediaBackgroundTask = UIBackgroundTaskInvalid;
 }
 
-
-
-
 OneSignalWebView *webVC;
 NSDictionary* lastMessageReceived;
 OSHandleNotificationReceivedBlock handleNotificationReceived;
@@ -302,8 +293,7 @@ OSHandleNotificationActionBlock handleNotificationAction;
     return webVC;
 }
 
-
-+ (BOOL) isRemoteSilentNotification:(NSDictionary*)msg {
++ (BOOL)isRemoteSilentNotification:(NSDictionary*)msg {
     //no alert, sound, or badge payload
     if(msg[@"badge"] || msg[@"aps"][@"badge"] || msg[@"m"] || msg[@"o"] || msg[@"s"] || (msg[@"title"] && [msg[@"title"] length] > 0) || msg[@"sound"] || msg[@"aps"][@"sound"] || msg[@"aps"][@"alert"] || msg[@"os_data"][@"buttons"])
         return false;
@@ -319,123 +309,61 @@ OSHandleNotificationActionBlock handleNotificationAction;
     handleNotificationAction = actionBlock;
 }
 
-+ (NSString*)md5:(NSString *)text {
-    return NULL;
++ (NSString*)getAppName {
+    return [[[NSBundle mainBundle] infoDictionary] objectForKey:(id)kCFBundleNameKey];
 }
 
-+ (NSArray*)getActionButtons:(NSDictionary*)messageDict {
-    if (messageDict[@"os_data"] && [messageDict[@"os_data"] isKindOfClass:[NSDictionary class]])
-        return messageDict[@"os_data"][@"buttons"][@"o"];
-    
-    return messageDict[@"o"];
-}
-
-+ (NSDictionary*)getPushTitleBody:(NSDictionary*)messageDict {
-    
-    NSString *title;
-    if ([messageDict[@"aps"][@"alert"] isKindOfClass:[NSDictionary class]])
-        title = messageDict[@"aps"][@"alert"][@"title"];
-    else
-        title = messageDict[@"aps"][@"alert"];
-    
-    if (!title) {
-        if ([messageDict[@"m"] isKindOfClass:[NSDictionary class]])
-            title = messageDict[@"m"][@"title"];
-    }
-    
-    if (!title) {
-        if ([messageDict[@"os_data"][@"buttons"][@"m"] isKindOfClass:[NSDictionary class]])
-            title = messageDict[@"os_data"][@"buttons"][@"m"][@"title"];
-    }
-    
-    if (!title)
-        title = [[[NSBundle mainBundle] infoDictionary] objectForKey:(id)kCFBundleNameKey];
-    if (!title)
-        title = @"";
-    
-    
-    NSString *subtitle;
-    if ([messageDict[@"aps"][@"alert"] isKindOfClass:[NSDictionary class]])
-        subtitle = messageDict[@"aps"][@"alert"][@"subtitle"];
-    else
-        subtitle = messageDict[@"aps"][@"alert"];
-    
-    if (!subtitle) {
-        if ([messageDict[@"m"] isKindOfClass:[NSDictionary class]])
-            subtitle = messageDict[@"m"][@"subtitle"];
-    }
-    
-    if (!subtitle) {
-        if ([messageDict[@"os_data"][@"buttons"][@"m"] isKindOfClass:[NSDictionary class]])
-            subtitle = messageDict[@"os_data"][@"buttons"][@"m"][@"subtitle"];
-    }
-    
-    if (!subtitle)
-        subtitle = @"";
-    
-    
-    
-    NSString *body;
-    if ([messageDict[@"aps"][@"alert"] isKindOfClass:[NSDictionary class]])
-        body = messageDict[@"aps"][@"alert"][@"body"];
-    else
-        body = messageDict[@"aps"][@"alert"];
-    
-    if (!body) {
-        if ([messageDict[@"m"] isKindOfClass:[NSDictionary class]])
-            body = messageDict[@"m"][@"body"];
-        else
-            body = messageDict[@"m"];
-    }
-    
-    if (!body) {
-        if ([messageDict[@"os_data"][@"buttons"][@"m"] isKindOfClass:[NSDictionary class]])
-            body = messageDict[@"os_data"][@"buttons"][@"m"][@"body"];
-        else
-            body = messageDict[@"os_data"][@"buttons"][@"m"];
-    }
-    
-    if (!body)
-        body = @"";
-    
-    return @{@"title" : title, @"subtitle": subtitle, @"body": body};
-}
-
-
-+ (NSMutableDictionary*) formatApsPayloadIntoStandard:(NSDictionary*)remoteUserInfo identifier:(NSString*)identifier {
++ (NSMutableDictionary*)formatApsPayloadIntoStandard:(NSDictionary*)remoteUserInfo identifier:(NSString*)identifier {
     NSMutableDictionary* userInfo, *customDict, *additionalData, *optionsDict;
+    BOOL is2dot4Format = false;
     
     if (remoteUserInfo[@"os_data"][@"buttons"]) {
         userInfo = [remoteUserInfo mutableCopy];
         additionalData = [NSMutableDictionary dictionary];
-        optionsDict = userInfo[@"os_data"][@"buttons"][@"o"];
+        
+        is2dot4Format = [userInfo[@"os_data"][@"buttons"] isKindOfClass:[NSArray class]];
+        if (is2dot4Format)
+            optionsDict = userInfo[@"os_data"][@"buttons"];
+        else
+           optionsDict = userInfo[@"os_data"][@"buttons"][@"o"];
     }
     else if (remoteUserInfo[@"custom"]) {
         userInfo = [remoteUserInfo mutableCopy];
         customDict = [userInfo[@"custom"] mutableCopy];
-        additionalData = [[NSMutableDictionary alloc] initWithDictionary:customDict[@"a"]];
+        if (customDict[@"a"])
+            additionalData = [[NSMutableDictionary alloc] initWithDictionary:customDict[@"a"]];
+        else
+            additionalData = [[NSMutableDictionary alloc] init];
         optionsDict = userInfo[@"o"];
     }
     else
         return nil;
     
-    NSMutableArray* buttonArray = [[NSMutableArray alloc] init];
-    for (NSDictionary* button in optionsDict) {
-        [buttonArray addObject: @{@"text" : button[@"n"],
-                                  @"id" : (button[@"i"] ? button[@"i"] : button[@"n"])}];
+    if (optionsDict) {
+        NSMutableArray* buttonArray = [[NSMutableArray alloc] init];
+        for (NSDictionary* button in optionsDict) {
+            [buttonArray addObject: @{@"text" : button[@"n"],
+                                      @"id" : (button[@"i"] ? button[@"i"] : button[@"n"])}];
+        }
+        additionalData[@"actionButtons"] = buttonArray;
     }
-    additionalData[@"actionSelected"] = identifier;
-    additionalData[@"actionButtons"] = buttonArray;
+    
+    if (![@"com.apple.UNNotificationDefaultActionIdentifier" isEqualToString:identifier])
+        additionalData[@"actionSelected"] = identifier;
+    
+    if ([additionalData count] == 0)
+        additionalData = nil;
     
     if (remoteUserInfo[@"os_data"]) {
         [userInfo addEntriesFromDictionary:additionalData];
-        userInfo[@"aps"] = @{@"alert" : userInfo[@"os_data"][@"buttons"][@"m"]};
+        if (!is2dot4Format)
+            userInfo[@"aps"] = @{@"alert" : userInfo[@"os_data"][@"buttons"][@"m"]};
     }
     else {
         customDict[@"a"] = additionalData;
         userInfo[@"custom"] = customDict;
         
-        if(userInfo[@"m"])
+        if (userInfo[@"m"])
             userInfo[@"aps"] = @{@"alert" : userInfo[@"m"]};
     }
     
@@ -454,7 +382,7 @@ OSHandleNotificationActionBlock handleNotificationAction;
     if (!handleNotificationReceived || ![self isOneSignalPayload])
         return;
     
-    OSNotificationPayload *payload = [[OSNotificationPayload alloc] initWithRawMessage:lastMessageReceived];
+    OSNotificationPayload *payload = [OSNotificationPayload parseWithApns:lastMessageReceived];
     OSNotification *notification = [[OSNotification alloc] initWithPayload:payload displayType:displayType];
     
     // Prevent duplicate calls to same receive event
@@ -466,21 +394,26 @@ OSHandleNotificationActionBlock handleNotificationAction;
     handleNotificationReceived(notification);
 }
 
+static NSString *_lastMessageIdFromAction;
+
 + (void)handleNotificationAction:(OSNotificationActionType)actionType actionID:(NSString*)actionID displayType:(OSNotificationDisplayType)displayType {
-    if (!handleNotificationAction || ![self isOneSignalPayload])
+    if (![self isOneSignalPayload])
         return;
     
     OSNotificationAction *action = [[OSNotificationAction alloc] initWithActionType:actionType :actionID];
-    OSNotificationPayload *payload = [[OSNotificationPayload alloc] initWithRawMessage:lastMessageReceived];
+    OSNotificationPayload *payload = [OSNotificationPayload parseWithApns:lastMessageReceived];
     OSNotification *notification = [[OSNotification alloc] initWithPayload:payload displayType:displayType];
-    OSNotificationOpenedResult * result = [[OSNotificationOpenedResult alloc] initWithNotification:notification action:action];
+    OSNotificationOpenedResult *result = [[OSNotificationOpenedResult alloc] initWithNotification:notification action:action];
     
     // Prevent duplicate calls to same action
-    static NSString* lastMessageID = @"";
-    if ([payload.notificationID isEqualToString:lastMessageID])
+    if ([payload.notificationID isEqualToString:_lastMessageIdFromAction])
         return;
-    lastMessageID = payload.notificationID;
+    _lastMessageIdFromAction = payload.notificationID;
     
+    [OneSignalTrackFirebaseAnalytics trackOpenEvent:result];
+    
+    if (!handleNotificationAction)
+        return;
     handleNotificationAction(result);
 }
 
@@ -492,94 +425,95 @@ OSHandleNotificationActionBlock handleNotificationAction;
     return @1;
 }
 
-+ (BOOL) isCapableOfGettingNotificationTypes {
-    return [[UIApplication sharedApplication] respondsToSelector:@selector(currentUserNotificationSettings)];
+// Can call currentUserNotificationSettings
++ (BOOL) canGetNotificationTypes {
+    return [OneSignalHelper isIOSVersionGreaterOrEqual:8];
 }
 
-+ (UILocalNotification*)createUILocalNotification:(NSDictionary*)data {
+// For iOS 9 and 8
++ (UILocalNotification*)createUILocalNotification:(OSNotificationPayload*)payload {
+    let notification = [UILocalNotification new];
     
-    UILocalNotification * notification = [[UILocalNotification alloc] init];
-    
-    id category = [[NSClassFromString(@"UIMutableUserNotificationCategory") alloc] init];
+    let category = [UIMutableUserNotificationCategory new];
     [category setIdentifier:@"__dynamic__"];
     
-    Class UIMutableUserNotificationActionClass = NSClassFromString(@"UIMutableUserNotificationAction");
-    NSMutableArray* actionArray = [[NSMutableArray alloc] init];
-    for (NSDictionary* button in [OneSignalHelper getActionButtons:data]) {
-        id action = [[UIMutableUserNotificationActionClass alloc] init];
-        [action setTitle:button[@"n"]];
-        [action setIdentifier:button[@"i"] ? button[@"i"] : [action title]];
-        [action setActivationMode:UIUserNotificationActivationModeForeground];
-        [action setDestructive:NO];
-        [action setAuthenticationRequired:NO];
+    NSMutableArray* actionArray = [NSMutableArray new];
+    for (NSDictionary* button in payload.actionButtons) {
+        let action = [UIMutableUserNotificationAction new];
+        action.title = button[@"text"];
+        action.identifier = button[@"id"];
+        action.activationMode = UIUserNotificationActivationModeForeground;
+        action.destructive = false;
+        action.authenticationRequired = false;
         
         [actionArray addObject:action];
-        // iOS 8 shows notification buttons in reverse in all cases but alerts. This flips it so the frist button is on the left.
+        // iOS 8 shows notification buttons in reverse in all cases but alerts.
+        //   This flips it so the frist button is on the left.
         if (actionArray.count == 2)
-            [category setActions:@[actionArray[1], actionArray[0]] forContext:UIUserNotificationActionContextMinimal];
+            [category setActions:@[actionArray[1], actionArray[0]]
+                      forContext:UIUserNotificationActionContextMinimal];
     }
     
     [category setActions:actionArray forContext:UIUserNotificationActionContextDefault];
     
-    Class uiUserNotificationSettings = NSClassFromString(@"UIUserNotificationSettings");
-    NSUInteger notificationTypes = NOTIFICATION_TYPE_ALL;
-    
-    NSSet* currentCategories = [[[UIApplication sharedApplication] currentUserNotificationSettings] categories];
+    var currentCategories = [[[UIApplication sharedApplication] currentUserNotificationSettings] categories];
     if (currentCategories)
         currentCategories = [currentCategories setByAddingObject:category];
     else
         currentCategories = [NSSet setWithObject:category];
     
-    [[UIApplication sharedApplication] registerUserNotificationSettings:[uiUserNotificationSettings settingsForTypes:notificationTypes categories:currentCategories]];
+    let notificationSettings = [UIUserNotificationSettings
+                                settingsForTypes:NOTIFICATION_TYPE_ALL
+                                categories:currentCategories];
+    
+    [[UIApplication sharedApplication] registerUserNotificationSettings:notificationSettings];
     notification.category = [category identifier];
+    
     return notification;
 }
 
-+ (UILocalNotification*)prepareUILocalNotification:(NSDictionary*)data :(NSDictionary*)userInfo {
+// iOS 8 and 9
++ (UILocalNotification*)prepareUILocalNotification:(OSNotificationPayload*)payload {
+    let notification = [self createUILocalNotification:payload];
     
-    UILocalNotification * notification = [self createUILocalNotification:data];
+    // alertTitle was added in iOS 8.2
+    if ([notification respondsToSelector:@selector(alertTitle)])
+        notification.alertTitle = payload.title;
     
-    if ([data[@"m"] isKindOfClass:[NSDictionary class]]) {
-        if ([notification respondsToSelector:NSSelectorFromString(@"alertTitle")])
-            [notification setValue:data[@"m"][@"title"] forKey:@"alertTitle"]; // Using reflection for pre-Xcode 6.2 support.
-        notification.alertBody = data[@"m"][@"body"];
-    }
-    else
-        notification.alertBody = data[@"m"];
+    notification.alertBody = payload.body;
     
-    notification.userInfo = userInfo;
-    notification.soundName = data[@"s"];
+    notification.userInfo = payload.rawPayload;
+    
+    notification.soundName = payload.sound;
     if (notification.soundName == nil)
         notification.soundName = UILocalNotificationDefaultSoundName;
-    if (data[@"b"])
-        notification.applicationIconBadgeNumber = [data[@"b"] intValue];
+    
+    notification.applicationIconBadgeNumber = payload.badge;
     
     return notification;
 }
 
 //Shared instance as OneSignal is delegate of UNUserNotificationCenterDelegate and CLLocationManagerDelegate
 static OneSignal* singleInstance = nil;
-+(OneSignal*) sharedInstance {
++(OneSignal*)sharedInstance {
     @synchronized( singleInstance ) {
-        if( !singleInstance ) {
-            singleInstance = [[OneSignal alloc] init];
-        }
+        if (!singleInstance )
+            singleInstance = [OneSignal new];
     }
     
     return singleInstance;
 }
 
-+ (BOOL)isiOS10Plus {
-    return [[[UIDevice currentDevice] systemVersion] floatValue] >= 10.0 ;
++ (BOOL)isIOSVersionGreaterOrEqual:(float)version {
+    return [[[UIDevice currentDevice] systemVersion] floatValue] >= version;
 }
 
 +(NSString*)randomStringWithLength:(int)length {
-    
-    const NSString * letters = @"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    NSMutableString *randomString = [[NSMutableString alloc] initWithCapacity:length];
-    for(int i = 0; i < length; i++) {
-        uint32_t ln = (uint32_t)[letters length];
-        uint32_t rand = arc4random_uniform(ln);
+    let letters = @"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    let randomString = [[NSMutableString alloc] initWithCapacity:length];
+    for(var i = 0; i < length; i++) {
+        let ln = (uint32_t)letters.length;
+        let rand = arc4random_uniform(ln);
         [randomString appendFormat:@"%C", [letters characterAtIndex:rand]];
     }
     return randomString;
@@ -588,108 +522,170 @@ static OneSignal* singleInstance = nil;
 #if XC8_AVAILABLE
 
 + (void)registerAsUNNotificationCenterDelegate {
-    Class UNNofiCenterClass = NSClassFromString(@"UNUserNotificationCenter");
-    UNUserNotificationCenter *curNotifCenter = [UNNofiCenterClass currentNotificationCenter];
+    let curNotifCenter = [UNUserNotificationCenter currentNotificationCenter];
     if (!curNotifCenter.delegate)
         curNotifCenter.delegate = (id)[self sharedInstance];
 }
 
-+ (id)prepareUNNotificationRequest:(NSDictionary *)data :(NSDictionary *)userInfo {
++(UNNotificationRequest*)prepareUNNotificationRequest:(OSNotificationPayload*)payload {
+    let content = [UNMutableNotificationContent new];
     
-    if (!NSClassFromString(@"UNNotificationAction") || !NSClassFromString(@"UNNotificationRequest"))
-        return NULL;
+    [self addActionButtons:payload toNotificationContent:content];
     
-    NSMutableArray * actionArray = [[NSMutableArray alloc] init];
-    for(NSDictionary* button in [OneSignalHelper getActionButtons:data]) {
-        NSString* title = button[@"n"] != NULL ? button[@"n"] : @"";
-        NSString* buttonID = button[@"i"] != NULL ? button[@"i"] : title;
-        id action = [NSClassFromString(@"UNNotificationAction") actionWithIdentifier:buttonID title:title options:UNNotificationActionOptionForeground];
+    content.title = payload.title;
+    content.subtitle = payload.subtitle;
+    content.body = payload.body;
+    
+    content.userInfo = payload.rawPayload;
+    
+    if (payload.sound)
+        content.sound = [UNNotificationSound soundNamed:payload.sound];
+    else
+        content.sound = UNNotificationSound.defaultSound;
+    
+    if (payload.badge != 0)
+        content.badge = [NSNumber numberWithInteger:payload.badge];
+    
+    // Check if media attached    
+    [self addAttachments:payload toNotificationContent:content];
+    
+    let trigger = [UNTimeIntervalNotificationTrigger triggerWithTimeInterval:0.25 repeats:NO];
+    let identifier = [self randomStringWithLength:16];
+    return [UNNotificationRequest requestWithIdentifier:identifier content:content trigger:trigger];
+}
+
++ (void)addActionButtons:(OSNotificationPayload*)payload
+   toNotificationContent:(UNMutableNotificationContent*)content {
+    if (!payload.actionButtons || payload.actionButtons.count == 0)
+        return;
+    
+    let actionArray = [NSMutableArray new];
+    for(NSDictionary* button in payload.actionButtons) {
+        let action = [UNNotificationAction actionWithIdentifier:button[@"id"]
+                                                          title:button[@"text"]
+                                                        options:UNNotificationActionOptionForeground];
         [actionArray addObject:action];
     }
     
-    if ([actionArray count] == 2)
-        actionArray = (NSMutableArray*)[[actionArray reverseObjectEnumerator] allObjects];
+    NSArray* finalActionArray;
+    if (actionArray.count == 2)
+        finalActionArray = [[actionArray reverseObjectEnumerator] allObjects];
+    else
+        finalActionArray = actionArray;
     
-    id category = [NSClassFromString(@"UNNotificationCategory") categoryWithIdentifier:@"__dynamic__" actions:actionArray intentIdentifiers:@[] options:UNNotificationCategoryOptionCustomDismissAction];
+    // Get a full list of categories so we don't replace any exisiting ones.
+    var allCategories = [self existingCategories];
     
-    NSSet* set = [[NSSet alloc] initWithArray:@[category]];
+    let category = [UNNotificationCategory categoryWithIdentifier:@"__dynamic__"
+                                                          actions:finalActionArray
+                                                intentIdentifiers:@[]
+                                                          options:UNNotificationCategoryOptionCustomDismissAction];
     
-    [[NSClassFromString(@"UNUserNotificationCenter") currentNotificationCenter] setNotificationCategories:set];
-    
-    id content = [[NSClassFromString(@"UNMutableNotificationContent") alloc] init];
-    [content setValue:@"__dynamic__" forKey:@"categoryIdentifier"];
-    
-    NSDictionary* alertDict = [OneSignalHelper getPushTitleBody:data];
-    [content setValue:alertDict[@"title"] forKey:@"title"];
-    [content setValue:alertDict[@"subtitle"] forKey:@"subtitle"];
-    [content setValue:alertDict[@"body"] forKey:@"body"];
-    
-    [content setValue:userInfo forKey:@"userInfo"];
-    
-    if (data[@"s"]) {
-        id defaultSound = [NSClassFromString(@"UNNotificationSound") performSelector:@selector(soundNamed:) withObject:data[@"s"]];
-        [content setValue:defaultSound forKey:@"sound"];
+    if (allCategories) {
+        let newCategorySet = [NSMutableSet new];
+        for(UNNotificationCategory *existingCategory in allCategories) {
+            if (![existingCategory.identifier isEqualToString:@"__dynamic__"])
+                [newCategorySet addObject:existingCategory];
+        }
+        
+        [newCategorySet addObject:category];
+        allCategories = newCategorySet;
     }
     else
-        [content setValue:[NSClassFromString(@"UNNotificationSound") performSelector:@selector(defaultSound)] forKey:@"sound"];
+        allCategories = [[NSMutableSet alloc] initWithArray:@[category]];
     
-    [content setValue:data[@"b"] forKey:@"badge"];
+    [[UNUserNotificationCenter currentNotificationCenter] setNotificationCategories:allCategories];
     
-    //Check if media attached
-    NSMutableArray *attachments = [NSMutableArray new];
-    NSDictionary * att = userInfo[@"at"];
-    if(!att && userInfo[@"os_data"][@"buttons"])
-        att = userInfo[@"os_data"][@"buttons"][@"at"];
+    content.categoryIdentifier = @"__dynamic__";
+}
+
++ (NSMutableSet<UNNotificationCategory*>*)existingCategories {
+    __block NSMutableSet* allCategories;
+    dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
+    let notificationCenter = [UNUserNotificationCenter currentNotificationCenter];
+    [notificationCenter getNotificationCategoriesWithCompletionHandler:^(NSSet<UNNotificationCategory *> *categories) {
+        allCategories = [categories mutableCopy];
+        dispatch_semaphore_signal(semaphore);
+    }];
+    dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
     
-    for(id key in att) {
-        NSString * URI = [att valueForKey:key];
+    return allCategories;
+}
+
++ (void)addAttachments:(OSNotificationPayload*)payload
+ toNotificationContent:(UNMutableNotificationContent*)content {
+    if (!payload.attachments)
+        return;
+    
+    let unAttachments = [NSMutableArray new];
+    
+    for(NSString* key in payload.attachments) {
+        let URI = [OneSignalHelper trimURLSpacing:[payload.attachments valueForKey:key]];
         
-        /* Remote Object */
-        if ([self verifyURL:URI]) {
-            /* Synchroneously download file and chache it */
-            NSString* name = [OneSignalHelper downloadMediaAndSaveInBundle:URI];
+        let nsURL = [NSURL URLWithString:URI];
+        
+        // Remote media attachment */
+        if (nsURL && [self isWWWScheme:nsURL]) {
+            // Synchroneously download file and chache it
+            let name = [OneSignalHelper downloadMediaAndSaveInBundle:URI];
+            
             if (!name)
                 continue;
-            NSArray* paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
-            NSString* filePath = [paths[0] stringByAppendingPathComponent:name];
-            NSURL* url = [NSURL fileURLWithPath:filePath];
+            
+            let paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
+            let filePath = [paths[0] stringByAppendingPathComponent:name];
+            let url = [NSURL fileURLWithPath:filePath];
             NSError* error;
-            id attachment = [NSClassFromString(@"UNNotificationAttachment") attachmentWithIdentifier:key URL:url options:0 error:&error];
+            let attachment = [UNNotificationAttachment
+                              attachmentWithIdentifier:key
+                              URL:url
+                              options:0
+                              error:&error];
             if (attachment)
-                [attachments addObject:attachment];
+                [unAttachments addObject:attachment];
         }
-        /* Local in bundle resources */
+        // Local in bundle resources
         else {
-            NSMutableArray* files = [[NSMutableArray alloc] initWithArray:[URI componentsSeparatedByString:@"."]];
-            if ([files count] < 2) continue;
-            NSString* extension = [files lastObject];
+            let files = [[NSMutableArray<NSString*> alloc] initWithArray:[URI componentsSeparatedByString:@"."]];
+            if (files.count < 2)
+                continue;
+            
+            let extension = [files lastObject];
             [files removeLastObject];
-            NSString * name = [files componentsJoinedByString:@"."];
+            let name = [files componentsJoinedByString:@"."];
+            
             //Make sure resource exists
-            NSURL * url = [[NSBundle mainBundle] URLForResource:name withExtension:extension];
+            let url = [[NSBundle mainBundle] URLForResource:name withExtension:extension];
             if (url) {
                 NSError *error;
-                id attachment = [NSClassFromString(@"UNNotificationAttachment") attachmentWithIdentifier:key URL:url options:0 error:&error];
+                id attachment = [UNNotificationAttachment
+                                 attachmentWithIdentifier:key
+                                 URL:url
+                                 options:0
+                                 error:&error];
                 if (attachment)
-                    [attachments addObject:attachment];
+                    [unAttachments addObject:attachment];
             }
         }
     }
     
-    [content setValue:attachments forKey:@"attachments"];
-    
-    id trigger = [NSClassFromString(@"UNTimeIntervalNotificationTrigger") triggerWithTimeInterval:0.25 repeats:NO];
-    
-    return [NSClassFromString(@"UNNotificationRequest") requestWithIdentifier:[self randomStringWithLength:16] content:content trigger:trigger];
+    content.attachments = unAttachments;
 }
 
-+ (void)addnotificationRequest:(NSDictionary *)data userInfo:(NSDictionary *)userInfo completionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
++ (void)addNotificationRequest:(OSNotificationPayload*)payload
+             completionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
+    
+    // Start background thread to download media so we don't lock the main UI thread.
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         [OneSignalHelper beginBackgroundMediaTask];
-        id notificationRequest = [OneSignalHelper prepareUNNotificationRequest:data :userInfo];
-        [[NSClassFromString(@"UNUserNotificationCenter") currentNotificationCenter] addNotificationRequest:notificationRequest withCompletionHandler:^(NSError * _Nullable error) {}];
+        
+        let notificationRequest = [OneSignalHelper prepareUNNotificationRequest:payload];
+        [[UNUserNotificationCenter currentNotificationCenter]
+         addNotificationRequest:notificationRequest
+         withCompletionHandler:^(NSError * _Nullable error) {}];
         if (completionHandler)
             completionHandler(UIBackgroundFetchResultNewData);
+        
         [OneSignalHelper endBackgroundMediaTask];
     });
 
@@ -697,7 +693,7 @@ static OneSignal* singleInstance = nil;
 
 // Synchroneously downloads a media
 // On success returns bundle resource name, otherwise returns nil
-+(NSString*) downloadMediaAndSaveInBundle:(NSString*) url {
++ (NSString*)downloadMediaAndSaveInBundle:(NSString*)url {
     
     NSArray<NSString*>* supportedExtensions = @[@"aiff", @"wav", @"mp3", @"mp4", @"jpg", @"jpeg", @"png", @"gif", @"mpeg", @"mpg", @"avi", @"m4a", @"m4v"];
     NSArray* components = [url componentsSeparatedByString:@"."];
@@ -711,14 +707,16 @@ static OneSignal* singleInstance = nil;
     if (![supportedExtensions containsObject:extension])
         return NULL;
     
-    NSURL * URL = [NSURL URLWithString:url];
-    NSData * data = [NSData dataWithContentsOfURL:URL];
-    NSString *name = [[self randomStringWithLength:10] stringByAppendingString:[NSString stringWithFormat:@".%@", extension]];
+    NSURL* URL = [NSURL URLWithString:url];
+    
+    
+    NSString* name = [[self randomStringWithLength:10] stringByAppendingString:[NSString stringWithFormat:@".%@", extension]];
     NSArray* paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
     NSString* filePath = [paths[0] stringByAppendingPathComponent:name];
-    NSError* error;
-    [data writeToFile:filePath options:NSDataWritingAtomic error:&error];
-    NSArray * cachedFiles = [[NSUserDefaults standardUserDefaults] objectForKey:@"CACHED_MEDIA"];
+    
+    NSError* error = nil;
+    [NSURLConnection downloadItemAtURL:URL toFile:filePath error:error];
+    NSArray* cachedFiles = [[NSUserDefaults standardUserDefaults] objectForKey:@"CACHED_MEDIA"];
     NSMutableArray* appendedCache;
     if (cachedFiles) {
         appendedCache = [[NSMutableArray alloc] initWithArray:cachedFiles];
@@ -733,6 +731,7 @@ static OneSignal* singleInstance = nil;
 }
 
 +(void)clearCachedMedia {
+    /*
     NSArray* cachedFiles = [[NSUserDefaults standardUserDefaults] objectForKey:@"CACHED_MEDIA"];
     if (cachedFiles) {
         NSArray * paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
@@ -743,6 +742,7 @@ static OneSignal* singleInstance = nil;
         }
         [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"CACHED_MEDIA"];
     }
+     */
 }
 
 #endif
@@ -822,6 +822,11 @@ static OneSignal* singleInstance = nil;
     }
 }
 
++ (BOOL)isWWWScheme:(NSURL*)url {
+    NSString* urlScheme = [url.scheme lowercaseString];
+    return [urlScheme isEqualToString:@"http"] || [urlScheme isEqualToString:@"https"];
+}
+
 + (void) displayWebView:(NSURL*)url {
     
     // Check if in-app or safari
@@ -832,10 +837,14 @@ static OneSignal* singleInstance = nil;
     }
     
     inAppLaunch = [[[NSUserDefaults standardUserDefaults] objectForKey:@"ONESIGNAL_INAPP_LAUNCH_URL"] boolValue];
-    NSString* urlScheme = [url.scheme lowercaseString];
-    BOOL isWWWScheme = [urlScheme isEqualToString:@"http"] || [urlScheme isEqualToString:@"https"];
     
-    if (inAppLaunch && isWWWScheme) {
+    // If the URL contains itunes.apple.com, it's an app store link
+    // that should be opened using sharedApplication openURL
+    if ([[url absoluteString] containsString:@"itunes.apple.com"]) {
+        inAppLaunch = NO;
+    }
+    
+    if (inAppLaunch && [self isWWWScheme:url]) {
         if (!webVC)
             webVC = [[OneSignalWebView alloc] init];
         webVC.url = url;
@@ -843,9 +852,9 @@ static OneSignal* singleInstance = nil;
     }
     else {
         // Keep dispatch_async. Without this the url can take an extra 2 to 10 secounds to open.
-        dispatch_async(dispatch_get_main_queue(), ^{
+         [OneSignalHelper dispatch_async_on_main_queue: ^{
             [[UIApplication sharedApplication] openURL:url];
-        });
+        }];
     }
     
 }
@@ -855,6 +864,16 @@ static OneSignal* singleInstance = nil;
         block();
     else
         dispatch_sync(dispatch_get_main_queue(), block);
+}
+
++ (void) dispatch_async_on_main_queue:(void(^)())block {
+    dispatch_async(dispatch_get_main_queue(), block);
+}
+
++ (void)performSelector:(SEL)aSelector onMainThreadOnObject:(nullable id)targetObj withObject:(nullable id)anArgument afterDelay:(NSTimeInterval)delay {
+    [self dispatch_async_on_main_queue:^{
+        [targetObj performSelector:aSelector withObject:anArgument afterDelay:delay];
+    }];
 }
 
 + (BOOL) isValidEmail:(NSString*)email {
@@ -886,6 +905,13 @@ static OneSignal* singleInstance = nil;
     for (int i = 0; i < CC_MD5_DIGEST_LENGTH; i++)
         [output appendFormat:@"%02x", digest[i]];
     return output;
+}
+
++ (NSString*)trimURLSpacing:(NSString*)url {
+    if (!url)
+        return url;
+    
+    return [url stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
 }
 
 #pragma clang diagnostic pop

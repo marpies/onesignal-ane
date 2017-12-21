@@ -26,6 +26,7 @@
 #import "Functions/AreNotificationsAvailableFunction.h"
 #import "Functions/PostNotificationFunction.h"
 #import "Functions/IdsAvailableFunction.h"
+#import "Functions/ClearNotificationsFunction.h"
 
 static BOOL AIROneSignalLogEnabled = NO;
 FREContext AIROneSignalExtContext = nil;
@@ -83,7 +84,8 @@ FRENamedFunction AIROneSignal_extFunctions[] = {
     { (const uint8_t*) "areNotificationsEnabled",   0, pushos_notificationsEnabled },
     { (const uint8_t*) "areNotificationsAvailable", 0, pushos_notificationsAvailable },
     { (const uint8_t*) "postNotification",          0, pushos_postNotification },
-    { (const uint8_t*) "idsAvailable",              0, pushos_idsAvailable }
+    { (const uint8_t*) "idsAvailable",              0, pushos_idsAvailable },
+    { (const uint8_t*) "clearNotifications",        0, pushos_clearNotifications }
 };
 
 void OneSignalContextInitializer( void* extData, const uint8_t* ctxType, FREContext ctx, uint32_t* numFunctionsToSet, const FRENamedFunction** functionsToSet ) {

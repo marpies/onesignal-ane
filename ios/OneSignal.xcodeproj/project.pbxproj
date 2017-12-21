@@ -46,6 +46,7 @@
 		C3FA9F921FEBBCC400D325C7 /* NSString+OneSignal.m in Sources */ = {isa = PBXBuildFile; fileRef = C3FA9F841FEBBCC300D325C7 /* NSString+OneSignal.m */; };
 		C3FA9F931FEBBCC400D325C7 /* OSNotificationPayload.m in Sources */ = {isa = PBXBuildFile; fileRef = C3FA9F851FEBBCC300D325C7 /* OSNotificationPayload.m */; };
 		C3FA9F961FEBBF3300D325C7 /* UserNotifications.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C3FA9F951FEBBF3300D325C7 /* UserNotifications.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		C3FA9F991FEBCF5900D325C7 /* ClearNotificationsFunction.m in Sources */ = {isa = PBXBuildFile; fileRef = C3FA9F981FEBCF5900D325C7 /* ClearNotificationsFunction.m */; };
 		C3FE9B0B1D3E89DF009B5046 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C3FE9B0A1D3E89DF009B5046 /* SystemConfiguration.framework */; };
 /* End PBXBuildFile section */
 
@@ -142,6 +143,8 @@
 		C3FA9F881FEBBCC400D325C7 /* OneSignalTrackFirebaseAnalytics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OneSignalTrackFirebaseAnalytics.h; sourceTree = "<group>"; };
 		C3FA9F891FEBBCC400D325C7 /* OneSignalNotificationSettingsIOS7.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OneSignalNotificationSettingsIOS7.h; sourceTree = "<group>"; };
 		C3FA9F951FEBBF3300D325C7 /* UserNotifications.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UserNotifications.framework; path = System/Library/Frameworks/UserNotifications.framework; sourceTree = SDKROOT; };
+		C3FA9F971FEBCF5900D325C7 /* ClearNotificationsFunction.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ClearNotificationsFunction.h; sourceTree = "<group>"; };
+		C3FA9F981FEBCF5900D325C7 /* ClearNotificationsFunction.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ClearNotificationsFunction.m; sourceTree = "<group>"; };
 		C3FE9B0A1D3E89DF009B5046 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -213,6 +216,8 @@
 				C37A127B1D3A44D700FD0CF4 /* AreNotificationsAvailableFunction.m */,
 				C3B0B6E61D3CF9CE00E920AA /* PostNotificationFunction.h */,
 				C3B0B6E71D3CF9CF00E920AA /* PostNotificationFunction.m */,
+				C3FA9F971FEBCF5900D325C7 /* ClearNotificationsFunction.h */,
+				C3FA9F981FEBCF5900D325C7 /* ClearNotificationsFunction.m */,
 			);
 			path = Functions;
 			sourceTree = "<group>";
@@ -416,6 +421,7 @@
 				C3242F321E09A23C00469D93 /* OneSignalTracker.m in Sources */,
 				C3242F2F1E09A23C00469D93 /* OneSignalJailbreakDetection.m in Sources */,
 				C3242F1B1E09A18F00469D93 /* OneSignalHelper.m in Sources */,
+				C3FA9F991FEBCF5900D325C7 /* ClearNotificationsFunction.m in Sources */,
 				C3FA9F8D1FEBBCC400D325C7 /* OneSignalNotificationSettingsIOS10.m in Sources */,
 				C37A12791D3A3B7600FD0CF4 /* AreNotificationsEnabledFunction.m in Sources */,
 				C3FA9F8F1FEBBCC400D325C7 /* OSObservable.m in Sources */,

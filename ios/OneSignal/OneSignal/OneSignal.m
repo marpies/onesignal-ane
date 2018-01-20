@@ -28,7 +28,6 @@
 #import "OneSignal.h"
 #import "OneSignalInternal.h"
 #import "OneSignalTracker.h"
-#import "OneSignalHTTPClient.h"
 #import "OneSignalTrackIAP.h"
 #import "OneSignalLocation.h"
 #import "OneSignalReachability.h"
@@ -58,6 +57,9 @@
 #import <sys/sysctl.h>
 #import <objc/runtime.h>
 #import <UIKit/UIKit.h>
+
+#import "Requests.h"
+#import "OneSignalClient.h"
 
 #import <UserNotifications/UserNotifications.h>
 
@@ -120,7 +122,7 @@ NSString* const kOSSettingsKeyInOmitNoAppIdLogging = @"kOSSettingsKeyInOmitNoApp
 
 @implementation OneSignal
 
-NSString* const ONESIGNAL_VERSION = @"020600";
+NSString* const ONESIGNAL_VERSION = @"020602";
 static NSString* mSDKType = @"native";
 static BOOL coldStartFromTapOnNotification = NO;
 
@@ -150,15 +152,6 @@ static int mSubscriptionStatus = -1;
 OSIdsAvailableBlock idsAvailableBlockWhenReady;
 BOOL disableBadgeClearing = NO;
 BOOL mShareLocation = YES;
-
-
-
-static OneSignalHTTPClient *_httpClient;
-+ (OneSignalHTTPClient*)httpClient {
-    if (!_httpClient)
-        _httpClient = [OneSignalHTTPClient new];
-    return _httpClient;
-}
 
 static OSNotificationDisplayType _inFocusDisplayType = OSNotificationDisplayTypeInAppAlert;
 + (void)setInFocusDisplayType:(OSNotificationDisplayType)value {
@@ -290,7 +283,6 @@ static ObserableSubscriptionStateChangesType* _subscriptionStateChangesObserver;
 
 + (void)clearStatics {
     app_id = nil;
-    _httpClient = nil;
     _osNotificationSettings = nil;
     waitingForApnsResponse = false;
     mLastNotificationTypes = -1;
@@ -458,13 +450,8 @@ static ObserableSubscriptionStateChangesType* _subscriptionStateChangesObserver;
 }
 
 +(void)downloadIOSParams {
-    let path = [NSString stringWithFormat:@"apps/%@/ios_params.js", self.app_id];
-    if (self.currentSubscriptionState.userId != nil)
-        [path stringByAppendingString:[NSString stringWithFormat:@"?player_id=%@", self.currentSubscriptionState.userId]];
-    let request = [self.httpClient requestWithMethod:@"GET" path:path];
-    
-    [OneSignalHelper enqueueRequest:request onSuccess:^(NSDictionary* results) {
-        [OneSignalTrackFirebaseAnalytics updateFromDownloadParams:results];
+    [OneSignalClient.sharedClient executeRequest:[OSRequestGetIosParams withUserId:self.currentSubscriptionState.userId appId:self.app_id] onSuccess:^(NSDictionary *result) {
+        [OneSignalTrackFirebaseAnalytics updateFromDownloadParams:result];
     } onFailure:nil];
 }
 
@@ -626,9 +613,9 @@ void onesignal_Log(ONE_S_LOG_LEVEL logLevel, NSString* message) {
     
     NSData* data = [jsonString dataUsingEncoding:NSUTF8StringEncoding];
     NSDictionary* keyValuePairs = [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:&jsonError];
-    if (jsonError == nil)
+    if (jsonError == nil) {
         [self sendTags:keyValuePairs];
-    else {
+    } else {
         onesignal_Log(ONE_S_LL_WARN,[NSString stringWithFormat: @"sendTags JSON Parse Error: %@", jsonError]);
         onesignal_Log(ONE_S_LL_WARN,[NSString stringWithFormat: @"sendTags JSON Parse Error, JSON: %@", jsonString]);
     }
@@ -640,6 +627,18 @@ void onesignal_Log(ONE_S_LOG_LEVEL logLevel, NSString* message) {
 
 + (void)sendTags:(NSDictionary*)keyValuePair onSuccess:(OSResultSuccessBlock)successBlock onFailure:(OSFailureBlock)failureBlock {
    
+    if (![NSJSONSerialization isValidJSONObject:keyValuePair]) {
+        onesignal_Log(ONE_S_LL_WARN, [NSString stringWithFormat:@"sendTags JSON Invalid: The following key/value pairs you attempted to send as tags are not valid JSON: %@", keyValuePair]);
+        return;
+    }
+    
+    for (NSString *key in [keyValuePair allKeys]) {
+        if ([keyValuePair[key] isKindOfClass:[NSDictionary class]]) {
+            onesignal_Log(ONE_S_LL_WARN, @"sendTags Tags JSON must not contain nested objects");
+            return;
+        }
+    }
+    
     if (tagsToSend == nil)
         tagsToSend = [keyValuePair mutableCopy];
     else
@@ -673,35 +672,17 @@ void onesignal_Log(ONE_S_LOG_LEVEL logLevel, NSString* message) {
     NSArray* nowProcessingCallbacks = pendingSendTagCallbacks;
     pendingSendTagCallbacks = nil;
     
-    
-    NSMutableURLRequest* request = [self.httpClient requestWithMethod:@"PUT" path:[NSString stringWithFormat:@"players/%@", self.currentSubscriptionState.userId]];
-    
-    NSDictionary* dataDic = [NSDictionary dictionaryWithObjectsAndKeys:
-                             app_id, @"app_id",
-                             nowSendingTags, @"tags",
-                             [OneSignalHelper getNetType], @"net_type",
-                             nil];
-    
-    NSData* postData = [NSJSONSerialization dataWithJSONObject:dataDic options:0 error:nil];
-    [request setHTTPBody:postData];
-    
-    [OneSignalHelper enqueueRequest:request
-                          onSuccess:^(NSDictionary *result) {
-                              if (nowProcessingCallbacks) {
-                                  for(OSPendingCallbacks* callbackSet in nowProcessingCallbacks) {
-                                      if (callbackSet.successBlock)
-                                          callbackSet.successBlock(result);
-                                  }
-                              }
-                          }
-                          onFailure:^(NSError *error) {
-                              if (nowProcessingCallbacks) {
-                                  for(OSPendingCallbacks* callbackSet in nowProcessingCallbacks) {
-                                      if (callbackSet.failureBlock)
-                                          callbackSet.failureBlock(error);
-                                  }
-                              }
-                          }];
+    [OneSignalClient.sharedClient executeRequest:[OSRequestSendTagsToServer withUserId:self.currentSubscriptionState.userId appId:self.app_id tags:nowSendingTags networkType:[OneSignalHelper getNetType]] onSuccess:^(NSDictionary *result) {
+        if (nowProcessingCallbacks)
+            for (OSPendingCallbacks *callbackSet in nowProcessingCallbacks)
+                if (callbackSet.successBlock)
+                    callbackSet.successBlock(result);
+    } onFailure:^(NSError *error) {
+        if (nowProcessingCallbacks)
+            for (OSPendingCallbacks *callbackSet in nowProcessingCallbacks)
+                if (callbackSet.failureBlock)
+                    callbackSet.failureBlock(error);
+    }];
 }
 
 + (void)sendTag:(NSString*)key value:(NSString*)value {
@@ -719,13 +700,10 @@ void onesignal_Log(ONE_S_LOG_LEVEL logLevel, NSString* message) {
         return;
     }
     
-    NSMutableURLRequest* request;
-    NSString* path = [NSString stringWithFormat:@"players/%@?app_id=%@", self.currentSubscriptionState.userId, self.app_id];
-    request = [self.httpClient requestWithMethod:@"GET" path:path];
-    
-    [OneSignalHelper enqueueRequest:request onSuccess:^(NSDictionary* results) {
-        successBlock([results objectForKey:@"tags"]);
+    [OneSignalClient.sharedClient executeRequest:[OSRequestGetTags withUserId:self.currentSubscriptionState.userId appId:self.app_id] onSuccess:^(NSDictionary *result) {
+        successBlock([result objectForKey:@"tags"]);
     } onFailure:failureBlock];
+    
 }
 
 + (void)getTags:(OSResultSuccessBlock)successBlock {
@@ -779,29 +757,19 @@ void onesignal_Log(ONE_S_LOG_LEVEL logLevel, NSString* message) {
 }
 
 + (void)postNotification:(NSDictionary*)jsonData onSuccess:(OSResultSuccessBlock)successBlock onFailure:(OSFailureBlock)failureBlock {
-    NSMutableURLRequest* request = [self.httpClient requestWithMethod:@"POST" path:@"notifications"];
-    
-    NSMutableDictionary* dataDic = [[NSMutableDictionary alloc] initWithDictionary:jsonData];
-    dataDic[@"app_id"] = dataDic[@"app_id"] ?: app_id;
-    
-    NSData* postData = [NSJSONSerialization dataWithJSONObject:dataDic options:0 error:nil];
-    [request setHTTPBody:postData];
-    
-    [OneSignalHelper enqueueRequest:request
-               onSuccess:^(NSDictionary* results) {
-                   NSData* jsonData = [NSJSONSerialization dataWithJSONObject:results options:0 error:nil];
-                   NSString* jsonResultsString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-                   
-                   onesignal_Log(ONE_S_LL_DEBUG, [NSString stringWithFormat: @"HTTP create notification success %@", jsonResultsString]);
-                   if (successBlock)
-                       successBlock(results);
-               }
-               onFailure:^(NSError* error) {
-                   onesignal_Log(ONE_S_LL_ERROR, @"Create notification failed");
-                   onesignal_Log(ONE_S_LL_INFO, [NSString stringWithFormat: @"%@", error]);
-                   if (failureBlock)
-                       failureBlock(error);
-               }];
+    [OneSignalClient.sharedClient executeRequest:[OSRequestPostNotification withAppId:self.app_id withJson:[jsonData mutableCopy]] onSuccess:^(NSDictionary *result) {
+        NSData* jsonData = [NSJSONSerialization dataWithJSONObject:result options:0 error:nil];
+        NSString* jsonResultsString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+        
+        onesignal_Log(ONE_S_LL_DEBUG, [NSString stringWithFormat: @"HTTP create notification success %@", jsonResultsString]);
+        if (successBlock)
+            successBlock(result);
+    } onFailure:^(NSError *error) {
+        onesignal_Log(ONE_S_LL_ERROR, @"Create notification failed");
+        onesignal_Log(ONE_S_LL_INFO, [NSString stringWithFormat: @"%@", error]);
+        if (failureBlock)
+            failureBlock(error);
+    }];
 }
 
 + (void)postNotificationWithJsonString:(NSString*)jsonString onSuccess:(OSResultSuccessBlock)successBlock onFailure:(OSFailureBlock)failureBlock {
@@ -925,23 +893,9 @@ void onesignal_Log(ONE_S_LOG_LEVEL logLevel, NSString* message) {
     
     self.currentSubscriptionState.pushToken = deviceToken;
     
-    NSMutableURLRequest* request;
-    request = [self.httpClient requestWithMethod:@"PUT" path:[NSString stringWithFormat:@"players/%@", self.currentSubscriptionState.userId]];
-    
-    int notificationTypes = [self getNotificationTypes];
-    
-    NSDictionary* dataDic = [NSDictionary dictionaryWithObjectsAndKeys:
-                             app_id, @"app_id",
-                             deviceToken, @"identifier",
-                             [NSNumber numberWithInt:notificationTypes], @"notification_types",
-                             nil];
-    
     [OneSignal onesignal_Log:ONE_S_LL_VERBOSE message:@"Calling OneSignal PUT updated pushToken!"];
     
-    NSData* postData = [NSJSONSerialization dataWithJSONObject:dataDic options:0 error:nil];
-    [request setHTTPBody:postData];
-    
-    [OneSignalHelper enqueueRequest:request onSuccess:successBlock onFailure:failureBlock];
+    [OneSignalClient.sharedClient executeRequest:[OSRequestUpdateDeviceToken withUserId:self.currentSubscriptionState.userId appId:self.app_id deviceToken:deviceToken notificationTypes:@([self getNotificationTypes])] onSuccess:successBlock onFailure:failureBlock];
     
     [self fireIdsAvailableCallback];
 }
@@ -1020,12 +974,6 @@ static dispatch_queue_t serialQueue;
     
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(registerUser) object:nil];
     
-    NSMutableURLRequest* request;
-    if (!self.currentSubscriptionState.userId)
-        request = [self.httpClient requestWithMethod:@"POST" path:@"players"];
-    else
-        request = [self.httpClient requestWithMethod:@"POST" path:[NSString stringWithFormat:@"players/%@/on_session", self.currentSubscriptionState.userId]];
-    
     let infoDictionary = [[NSBundle mainBundle] infoDictionary];
     NSString* build = infoDictionary[(NSString*)kCFBundleVersionKey];
     
@@ -1035,15 +983,17 @@ static dispatch_queue_t serialQueue;
                                          encoding:NSUTF8StringEncoding];
     
     let dataDic = [NSMutableDictionary dictionaryWithObjectsAndKeys:
-                    app_id, @"app_id",
-                    deviceModel, @"device_model",
-                    [[UIDevice currentDevice] systemVersion], @"device_os",
-                    [NSNumber numberWithInt:(int)[[NSTimeZone localTimeZone] secondsFromGMT]], @"timezone",
-                    [NSNumber numberWithInt:0], @"device_type",
-                    [[[UIDevice currentDevice] identifierForVendor] UUIDString], @"ad_id",
-                    ONESIGNAL_VERSION, @"sdk",
-                    self.currentSubscriptionState.pushToken, @"identifier", // identifier MUST be at the end as it could be nil.
-                    nil];
+                   app_id, @"app_id",
+                   [[UIDevice currentDevice] systemVersion], @"device_os",
+                   [NSNumber numberWithInt:(int)[[NSTimeZone localTimeZone] secondsFromGMT]], @"timezone",
+                   [NSNumber numberWithInt:0], @"device_type",
+                   [[[UIDevice currentDevice] identifierForVendor] UUIDString], @"ad_id",
+                   ONESIGNAL_VERSION, @"sdk",
+                   self.currentSubscriptionState.pushToken, @"identifier", // identifier MUST be at the end as it could be nil.
+                   nil];
+    
+    if (deviceModel)
+        dataDic[@"device_model"] = deviceModel;
     
     if (build)
         dataDic[@"game_version"] = build;
@@ -1087,8 +1037,6 @@ static dispatch_queue_t serialQueue;
     
     [OneSignal onesignal_Log:ONE_S_LL_VERBOSE message:@"Calling OneSignal create/on_session"];
     
-    let postData = [NSJSONSerialization dataWithJSONObject:dataDic options:0 error:nil];
-    [request setHTTPBody:postData];
     
     if (mShareLocation && [OneSignalLocation lastLocation]) {
         dataDic[@"lat"] = [NSNumber numberWithDouble:[OneSignalLocation lastLocation]->cords.latitude];
@@ -1098,8 +1046,7 @@ static dispatch_queue_t serialQueue;
         [OneSignalLocation clearLastLocation];
     }
     
-    [OneSignalHelper enqueueRequest:request onSuccess:^(NSDictionary* results) {
-        
+    [OneSignalClient.sharedClient executeRequest:[OSRequestRegisterUser withData:dataDic userId:self.currentSubscriptionState.userId] onSuccess:^(NSDictionary *result) {
         waitingForOneSReg = false;
         
         // Success, no more high priority
@@ -1107,15 +1054,15 @@ static dispatch_queue_t serialQueue;
         
         [self updateLastSessionDateTime];
         
-        if (results[@"id"]) {
-            self.currentSubscriptionState.userId = results[@"id"];
+        if (result[@"id"]) {
+            self.currentSubscriptionState.userId = result[@"id"];
             [[NSUserDefaults standardUserDefaults] setObject:self.currentSubscriptionState.userId forKey:@"GT_PLAYER_ID"];
             [[NSUserDefaults standardUserDefaults] synchronize];
             
             if (self.currentSubscriptionState.pushToken)
-               [self updateDeviceToken:self.currentSubscriptionState.pushToken
-                             onSuccess:tokenUpdateSuccessBlock
-                             onFailure:tokenUpdateFailureBlock];
+                [self updateDeviceToken:self.currentSubscriptionState.pushToken
+                              onSuccess:tokenUpdateSuccessBlock
+                              onFailure:tokenUpdateFailureBlock];
             
             if (tagsToSend)
                 [self performSelector:@selector(sendTagsToServer) withObject:nil afterDelay:5];
@@ -1139,7 +1086,7 @@ static dispatch_queue_t serialQueue;
             }
             
         }
-    } onFailure:^(NSError* error) {
+    } onFailure:^(NSError *error) {
         waitingForOneSReg = false;
         [OneSignal onesignal_Log:ONE_S_LL_ERROR message:[NSString stringWithFormat: @"Error registering with OneSignal: %@", error]];
         
@@ -1161,19 +1108,12 @@ static dispatch_queue_t serialQueue;
     if ([self getNotificationTypes] != -1 && self.currentSubscriptionState.userId && mLastNotificationTypes != [self getNotificationTypes]) {
         if (!self.currentSubscriptionState.pushToken) {
             if ([self registerForAPNsToken])
-               return true;
+                return true;
         }
         
         mLastNotificationTypes = [self getNotificationTypes];
-        let request = [self.httpClient requestWithMethod:@"PUT" path:[NSString stringWithFormat:@"players/%@", self.currentSubscriptionState.userId]];
-        let dataDic = [NSDictionary dictionaryWithObjectsAndKeys:
-                         app_id, @"app_id",
-                         @([self getNotificationTypes]), @"notification_types",
-                         nil];
-        let postData = [NSJSONSerialization dataWithJSONObject:dataDic options:0 error:nil];
-        [request setHTTPBody:postData];
         
-        [OneSignalHelper enqueueRequest:request onSuccess:nil onFailure:nil];
+        [OneSignalClient.sharedClient executeRequest:[OSRequestUpdateNotificationTypes withUserId:self.currentSubscriptionState.userId appId:self.app_id notificationTypes:@([self getNotificationTypes])] onSuccess:nil onFailure:nil];
         
         if ([self getUsableDeviceToken])
             [self fireIdsAvailableCallback];
@@ -1188,19 +1128,7 @@ static dispatch_queue_t serialQueue;
     if (!self.currentSubscriptionState.userId)
         return;
     
-    let request = [self.httpClient requestWithMethod:@"POST" path:[NSString stringWithFormat:@"players/%@/on_purchase", self.currentSubscriptionState.userId]];
-    
-    let dataDic = [NSDictionary dictionaryWithObjectsAndKeys:
-                     app_id, @"app_id",
-                     purchases, @"purchases",
-                     nil];
-    
-    let postData = [NSJSONSerialization dataWithJSONObject:dataDic options:0 error:nil];
-    [request setHTTPBody:postData];
-    
-    [OneSignalHelper enqueueRequest:request
-                          onSuccess:nil
-                          onFailure:nil];
+    [OneSignalClient.sharedClient executeRequest:[OSRequestSendPurchases withUserId:self.currentSubscriptionState.userId appId:self.app_id withPurchases:purchases] onSuccess:nil onFailure:nil];
 }
 
 
@@ -1335,16 +1263,7 @@ static NSString *_lastnonActiveMessageId;
     NSString* lastMessageId = [[NSUserDefaults standardUserDefaults] objectForKey:@"GT_LAST_MESSAGE_OPENED_"];
     //Only submit request if messageId not nil and: (lastMessage is nil or not equal to current one)
     if(messageId && (!lastMessageId || ![lastMessageId isEqualToString:messageId])) {
-        NSMutableURLRequest* request = [self.httpClient requestWithMethod:@"PUT" path:[NSString stringWithFormat:@"notifications/%@", messageId]];
-        NSDictionary* dataDic = [NSDictionary dictionaryWithObjectsAndKeys:
-                                 app_id, @"app_id",
-                                 self.currentSubscriptionState.userId, @"player_id",
-                                 @(YES), @"opened",
-                                 nil];
-        
-        NSData* postData = [NSJSONSerialization dataWithJSONObject:dataDic options:0 error:nil];
-        [request setHTTPBody:postData];
-        [OneSignalHelper enqueueRequest:request onSuccess:nil onFailure:nil];
+        [OneSignalClient.sharedClient executeRequest:[OSRequestSubmitNotificationOpened withUserId:self.currentSubscriptionState.userId appId:self.app_id wasOpened:YES messageId:messageId] onSuccess:nil onFailure:nil];
         [[NSUserDefaults standardUserDefaults] setObject:messageId forKey:@"GT_LAST_MESSAGE_OPENED_"];
         [[NSUserDefaults standardUserDefaults] synchronize];
     }
@@ -1535,26 +1454,7 @@ static NSString *_lastnonActiveMessageId;
         return;
     }
     
-    let lowEmail = [trimmedEmail lowercaseString];
-    let md5 = [OneSignalHelper hashUsingMD5:lowEmail];
-    let sha1 = [OneSignalHelper hashUsingSha1:lowEmail];
-    
-    onesignal_Log(ONE_S_LL_DEBUG, [NSString stringWithFormat:@"%@ - MD5: %@, SHA1:%@", lowEmail, md5, sha1]);
-    
-    let request = [self.httpClient requestWithMethod:@"PUT"
-                                                path:[NSString stringWithFormat:@"players/%@", self.currentSubscriptionState.userId]];
-    let dataDic = [NSDictionary dictionaryWithObjectsAndKeys:
-                    app_id, @"app_id",
-                    md5, @"em_m",
-                    sha1, @"em_s",
-                    [OneSignalHelper getNetType], @"net_type",
-                    nil];
-    let postData = [NSJSONSerialization dataWithJSONObject:dataDic options:0 error:nil];
-    [request setHTTPBody:postData];
-    
-    [OneSignalHelper enqueueRequest:request
-                          onSuccess:nil
-                          onFailure:nil];
+    [OneSignalClient.sharedClient executeRequest:[OSRequestSyncHashedEmail withUserId:self.currentSubscriptionState.userId appId:self.app_id email:trimmedEmail networkType:[OneSignalHelper getNetType]] onSuccess:nil onFailure:nil];
 }
 
 // Called from the app's Notification Service Extension

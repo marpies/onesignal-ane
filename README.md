@@ -13,8 +13,8 @@ Development of this extension is supported by [Master Tigra, Inc.](https://githu
 
 ## Native SDK versions
 
-* iOS `v2.3.4`
-* Android `v3.4.2`
+* iOS `v2.6.0` (Dec 18, 2017)
+* Android `v3.7.1` (Dec 15, 2017)
 
 ## Getting started
 
@@ -295,6 +295,12 @@ ANT build scripts are available in the [build](build/) directory. Edit [build.pr
 The ANE has been written by [Marcel Piestansky](https://twitter.com/marpies) and is distributed under [Apache License, version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html).
 
 ## Changelog
+
+#### January 20, 2017 (v1.3.0)
+
+* UPDATED OneSignal SDKs for both iOS (v2.6.2) and Android (v3.7.1)
+* ADDED `clearOneSignalNotifications` APIs
+* FIXED empty notification message on Android
 
 #### December 20, 2016 (v1.2.0)
 

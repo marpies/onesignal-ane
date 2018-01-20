@@ -195,8 +195,8 @@ static NSString* const kPushOSDefaultsSubscriptionKey = @"pushos_subscription";
             json[key] = payload.additionalData[key];
         }
     }
-    if( payload.actionButtons != nil ) {
-        json[@"actionButtons"] = [self getButtons:(NSArray*)payload.actionButtons];
+    if( payload.actionButtons != nil && payload.actionButtons.count > 0 ) {
+        json[@"actionButtons"] = [self getButtons:payload.actionButtons];
         NSString* actionSelected = @"__DEFAULT__";
         if( action != nil && action.actionID != nil ) {
             actionSelected = action.actionID;
@@ -223,8 +223,8 @@ static NSString* const kPushOSDefaultsSubscriptionKey = @"pushos_subscription";
     NSMutableArray* buttons = [NSMutableArray array];
     for( NSDictionary* button in buttonsRaw ) {
         [buttons addObject:@{
-                             @"id": button[@"i"] ? button[@"i"] : button[@"n"],
-                             @"text": button[@"n"]
+                             @"id": button[@"id"],
+                             @"text": button[@"text"]
                              }];
     }
     return buttons;

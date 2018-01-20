@@ -13,7 +13,7 @@ Development of this extension is supported by [Master Tigra, Inc.](https://githu
 
 ## Native SDK versions
 
-* iOS `v2.6.0` (Dec 18, 2017)
+* iOS `v2.6.2` (Jan 10, 2018)
 * Android `v3.7.1` (Dec 15, 2017)
 
 ## Getting started

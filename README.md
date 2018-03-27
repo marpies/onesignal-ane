@@ -95,7 +95,7 @@ For Android support, modify `manifestAdditions` element so that it contains the 
             <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
             <!-- START: ShortcutBadger -->
-            
+
             <!-- Samsung -->
             <uses-permission android:name="com.sec.android.provider.badge.permission.READ"/>
             <uses-permission android:name="com.sec.android.provider.badge.permission.WRITE"/>
@@ -134,22 +134,37 @@ For Android support, modify `manifestAdditions` element so that it contains the 
 
             <application>
 
-                <!-- OneSignal BEGIN -->
                 <meta-data android:name="com.google.android.gms.version"
                             android:value="@integer/google_play_services_version" />
+
+                <!-- OneSignal BEGIN -->
                 <meta-data android:name="onesignal_app_id"
                             android:value="{ONE-SIGNAL-APP-ID}" />
                 <meta-data android:name="onesignal_google_project_number"
                             android:value="str:{GOOGLE-SENDER-ID}" />
 
+                <receiver android:name="com.onesignal.NotificationOpenedReceiver" />
+                <service android:name="com.onesignal.GcmIntentService" />
 
                 <!-- For Android O -->
-                <service android:name="com.onesignal.NotificationRestoreJobService"
-                        android:permission="android.permission.BIND_JOB_SERVICE" />
                 <service android:name="com.onesignal.GcmIntentJobService"
                         android:permission="android.permission.BIND_JOB_SERVICE" />
+
                 <service android:name="com.onesignal.SyncJobService"
                         android:permission="android.permission.BIND_JOB_SERVICE" />
+
+                <service android:name="com.onesignal.RestoreJobService"
+                    android:permission="android.permission.BIND_JOB_SERVICE" />
+
+                <service android:name="com.onesignal.RestoreKickoffJobService"
+                    android:permission="android.permission.BIND_JOB_SERVICE" />
+                <!-- END - For Android O -->
+
+                <service android:name="com.onesignal.SyncService" />
+                <activity android:name="com.onesignal.PermissionsActivity"
+                        android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
+                <service android:name="com.onesignal.NotificationRestoreService" />
 
                 <receiver android:name="com.onesignal.GcmBroadcastReceiver"
                             android:permission="com.google.android.c2dm.permission.SEND" >
@@ -158,14 +173,10 @@ For Android support, modify `manifestAdditions` element so that it contains the 
                         <category android:name="{APP-PACKAGE-NAME}" />
                     </intent-filter>
                 </receiver>
-                <receiver android:name="com.onesignal.NotificationOpenedReceiver" />
-                <service android:name="com.onesignal.GcmIntentService" />
-                <service android:name="com.onesignal.SyncService" android:stopWithTask="false" />
-                <activity android:name="com.onesignal.PermissionsActivity" android:theme="@android:style/Theme.Translucent.NoTitleBar" />
 
-                <service android:name="com.onesignal.NotificationRestoreService" />
                 <receiver android:name="com.onesignal.BootUpReceiver">
                     <intent-filter>
+                        <action android:name="android.intent.action.ACTION_BOOT_COMPLETED" />
                         <action android:name="android.intent.action.BOOT_COMPLETED" />
                         <action android:name="android.intent.action.QUICKBOOT_POWERON" />
                     </intent-filter>

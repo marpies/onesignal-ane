@@ -95,23 +95,41 @@ For Android support, modify `manifestAdditions` element so that it contains the 
             <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
             <!-- START: ShortcutBadger -->
+            
             <!-- Samsung -->
             <uses-permission android:name="com.sec.android.provider.badge.permission.READ"/>
             <uses-permission android:name="com.sec.android.provider.badge.permission.WRITE"/>
+
             <!-- HTC -->
             <uses-permission android:name="com.htc.launcher.permission.READ_SETTINGS"/>
             <uses-permission android:name="com.htc.launcher.permission.UPDATE_SHORTCUT"/>
+
             <!-- Sony -->
             <uses-permission android:name="com.sonyericsson.home.permission.BROADCAST_BADGE"/>
             <uses-permission android:name="com.sonymobile.home.permission.PROVIDER_INSERT_BADGE"/>
+
             <!-- Apex -->
             <uses-permission android:name="com.anddoes.launcher.permission.UPDATE_COUNT"/>
+
             <!-- Solid -->
             <uses-permission android:name="com.majeur.launcher.permission.UPDATE_BADGE"/>
+
             <!-- Huawei -->
             <uses-permission android:name="com.huawei.android.launcher.permission.CHANGE_BADGE" />
             <uses-permission android:name="com.huawei.android.launcher.permission.READ_SETTINGS" />
             <uses-permission android:name="com.huawei.android.launcher.permission.WRITE_SETTINGS" />
+
+            <!-- ZUK -->
+            <uses-permission android:name="android.permission.READ_APP_BADGE"/>
+
+            <!-- OPPO -->
+            <uses-permission android:name="com.oppo.launcher.permission.READ_SETTINGS"/>
+            <uses-permission android:name="com.oppo.launcher.permission.WRITE_SETTINGS"/>
+
+            <!-- EvMe -->
+            <uses-permission android:name="me.everything.badger.permission.BADGE_COUNT_READ"/>
+            <uses-permission android:name="me.everything.badger.permission.BADGE_COUNT_WRITE"/>
+
             <!-- End: ShortcutBadger -->
 
             <application>
@@ -123,6 +141,15 @@ For Android support, modify `manifestAdditions` element so that it contains the 
                             android:value="{ONE-SIGNAL-APP-ID}" />
                 <meta-data android:name="onesignal_google_project_number"
                             android:value="str:{GOOGLE-SENDER-ID}" />
+
+
+                <!-- For Android O -->
+                <service android:name="com.onesignal.NotificationRestoreJobService"
+                        android:permission="android.permission.BIND_JOB_SERVICE" />
+                <service android:name="com.onesignal.GcmIntentJobService"
+                        android:permission="android.permission.BIND_JOB_SERVICE" />
+                <service android:name="com.onesignal.SyncJobService"
+                        android:permission="android.permission.BIND_JOB_SERVICE" />
 
                 <receiver android:name="com.onesignal.GcmBroadcastReceiver"
                             android:permission="com.google.android.c2dm.permission.SEND" >

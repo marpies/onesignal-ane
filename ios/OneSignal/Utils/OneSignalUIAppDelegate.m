@@ -53,17 +53,10 @@ static NSString* const kPushOSDefaultsSubscriptionKey = @"pushos_subscription";
     OSNotificationDisplayType inFocusDisplayType = enableInAppAlerts ? OSNotificationDisplayTypeInAppAlert : OSNotificationDisplayTypeNone;
     [OneSignal initWithLaunchOptions:launchOptions appId:oneSignalAppId handleNotificationReceived:^(OSNotification *notification) {
         [AIROneSignal log:@"OneSignalUIAppDelegate::handleNotificationReceived"];
-        /* Notification in this handler will only be dispatched to AIR if the app is in focus,
-         * otherwise we'll wait for user interaction and the notification will be handled in 'handleNotificationAction' */
-        if( notification.displayType == OSNotificationDisplayTypeNone ) {
-            [AIROneSignal log:@"Received notification while app is active, dispatching."];
-            [self dispatchNotification:[self getJSONForNotification:notification]];
-        } else {
-            [AIROneSignal log:@"Received notification while in background, waiting for user interaction."];
-        }
+        [self dispatchNotification:[self getJSONForNotification:notification]];
     } handleNotificationAction:^(OSNotificationOpenedResult *result) {
         [AIROneSignal log:@"OneSignalUIAppDelegate::handleNotificationAction"];
-        [self dispatchNotification:[self getJSONForNotification:result.notification notificationAction:result.action]];
+        [self dispatchNotification:[self getJSONForNotification:result.notification notificationAction:result.action appActive:NO]];
     } settings:@{
                  kOSSettingsKeyInAppAlerts: @(enableInAppAlerts),
                  kOSSettingsKeyAutoPrompt: @(autoRegister),
@@ -73,7 +66,7 @@ static NSString* const kPushOSDefaultsSubscriptionKey = @"pushos_subscription";
     /* Manually dispatch the notification from cold start */
     if( (launchOptions != nil) && launchOptions[UIApplicationLaunchOptionsRemoteNotificationKey] ) {
         [OneSignalHelper lastMessageReceived:launchOptions[UIApplicationLaunchOptionsRemoteNotificationKey]];
-        [OneSignalHelper handleNotificationReceived:OSNotificationDisplayTypeNone];
+        [OneSignalHelper handleNotificationAction:OSNotificationActionTypeOpened actionID:nil displayType:OSNotificationDisplayTypeNone];
     }
 
     if( autoRegister ) {
@@ -172,14 +165,14 @@ static NSString* const kPushOSDefaultsSubscriptionKey = @"pushos_subscription";
 #pragma mark - Private
 
 - (NSDictionary*) getJSONForNotification:(nonnull OSNotification*) notification {
-    return [self getJSONForNotification:notification notificationAction:nil];
+    return [self getJSONForNotification:notification notificationAction:nil appActive:YES];
 }
 
-- (NSDictionary*) getJSONForNotification:(nonnull OSNotification*) notification notificationAction:(nullable OSNotificationAction*) action {
+- (NSDictionary*) getJSONForNotification:(nonnull OSNotification*) notification notificationAction:(nullable OSNotificationAction*) action appActive:(BOOL) appActive {
     OSNotificationPayload* payload = notification.payload;
     NSMutableDictionary* json = [NSMutableDictionary dictionary];
     json[@"message"] = payload.body;
-    json[@"isActive"] = @(notification.displayType == OSNotificationDisplayTypeNone);
+    json[@"isActive"] = @(appActive);
     if( payload.title != nil ) {
         json[@"title"] = payload.title;
     }

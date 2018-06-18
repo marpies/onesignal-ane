@@ -82,8 +82,8 @@
         <copy todir="temp/android/com.marpies.ane.onesignal-res/">
             <fileset dir="temp/android/aar/res/"/>
         </copy>
-        <!-- Copy OneSignalSDK.jar -->
-        <copy file="../android/libs/OneSignalSDK.jar" tofile="temp/android/OneSignalSDK.jar" overwrite="true" />
+        <!-- Copy OneSignal jar -->
+        <copy file="../android/libs/onesignal-3.9.1.jar" tofile="temp/android/onesignal-3.9.1.jar" overwrite="true" />
         <!-- clean up -->
         <delete dir="temp/android/aar" />
         <delete dir="../android/build" />

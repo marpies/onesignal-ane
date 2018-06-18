@@ -331,6 +331,36 @@ package com.marpies.ane.onesignal {
             }
         }
 
+		/**
+         * Lets your app require the user's privacy consent before it will initialize.
+         * If you call this method and pass in <code>true</code>, the SDK will delay initialization until
+         * your application calls <code>provideUserConsent(true)</code>.
+         *
+         * <p>If the SDK is waiting for the user's consent, calling any OneSignal SDK methods will
+         * do nothing but print a warning. The user will not be registered for push notifications
+         * until this happens.</p>
+         *
+         * @param value
+         */
+        public static function setRequiresUserPrivacyConsent( value:Boolean ):void {
+            if( !isSupported || !initExtensionContext() ) return;
+
+            mContext.call( "setRequiresUserPrivacyConsent", value );
+        }
+
+		/**
+         * If your application is set to require the user's privacy consent, you can provide this
+         * consent using this method. Until you call this method and pass in <code>true</code>,
+         * the SDK will not fully initialize and will not send any data to OneSignal.
+         *
+         * @param value
+         */
+        public static function provideUserConsent( value:Boolean ):void {
+            if( !isSupported || !initExtensionContext() ) return;
+
+            mContext.call( "provideUserConsent", value );
+        }
+
         /**
          * Adds callback that will be called when user taps a notification
          * or when notification is received while the app is in foreground.
@@ -393,6 +423,15 @@ package com.marpies.ane.onesignal {
          *
          *
          */
+
+		/**
+         * Returns a boolean indicating if the user has provided privacy consent.
+         */
+        public static function get userProvidedPrivacyConsent():Boolean {
+            if( !isSupported || !initExtensionContext() ) return false;
+
+            return mContext.call( "userProvidedPrivacyConsent" ) as Boolean;
+        }
 
         /**
          * Returns <code>true</code> if notifications are enabled for your app in the device

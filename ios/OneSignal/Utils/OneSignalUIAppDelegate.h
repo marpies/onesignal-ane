@@ -18,14 +18,14 @@
 
 @interface OneSignalUIAppDelegate : NSObject
 
-- (void) startWithOneSignalAppId:(NSString*) oneSignalAppId autoRegister:(BOOL) autoRegister enableInAppAlerts:(BOOL) enableInAppAlerts;
+- (void) startWithOneSignalAppId:(nonnull NSString*) oneSignalAppId autoRegister:(BOOL) autoRegister enableInAppAlerts:(BOOL) enableInAppAlerts;
 - (void) registerForPushNotifications;
 - (void) setSubscription:(BOOL) subscription;
 - (BOOL) getSubscription;
-- (void) sendTags:(NSDictionary*) tags;
-- (void) deleteTags:(NSArray*) tags;
+- (void) sendTags:(nullable NSDictionary*) tags;
+- (void) deleteTags:(nullable NSArray*) tags;
 - (void) getTags:(int) callbackID;
-- (void) postNotification:(NSDictionary*) parameters callbackID:(int) callbackID;
+- (void) postNotification:(nullable NSDictionary*) parameters callbackID:(int) callbackID;
 - (void) idsAvailable;
 - (BOOL) isInitialized;
 

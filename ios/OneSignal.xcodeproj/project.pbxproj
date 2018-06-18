@@ -35,6 +35,13 @@
 		C32B178920136CA500912AC4 /* OneSignalNotificationSettingsIOS8.m in Sources */ = {isa = PBXBuildFile; fileRef = C32B176F20136CA400912AC4 /* OneSignalNotificationSettingsIOS8.m */; };
 		C32B178A20136CA500912AC4 /* OSSubscription.m in Sources */ = {isa = PBXBuildFile; fileRef = C32B177020136CA400912AC4 /* OSSubscription.m */; };
 		C32B178B20136CA500912AC4 /* OneSignalRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = C32B177120136CA400912AC4 /* OneSignalRequest.m */; };
+		C330437320D800AA00988ED3 /* OneSignalWebOpenDialog.m in Sources */ = {isa = PBXBuildFile; fileRef = C330436520D800A800988ED3 /* OneSignalWebOpenDialog.m */; };
+		C330437420D800AA00988ED3 /* ReattemptRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = C330436620D800A800988ED3 /* ReattemptRequest.m */; };
+		C330437520D800AA00988ED3 /* OSEmailSubscription.m in Sources */ = {isa = PBXBuildFile; fileRef = C330436A20D800A900988ED3 /* OSEmailSubscription.m */; };
+		C330437620D800AA00988ED3 /* NSURL+OneSignal.m in Sources */ = {isa = PBXBuildFile; fileRef = C330436B20D800A900988ED3 /* NSURL+OneSignal.m */; };
+		C330437720D800AA00988ED3 /* OneSignalExtensionBadgeHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = C330436C20D800A900988ED3 /* OneSignalExtensionBadgeHandler.m */; };
+		C330437820D800AA00988ED3 /* DelayedInitializationParameters.m in Sources */ = {isa = PBXBuildFile; fileRef = C330436E20D800A900988ED3 /* DelayedInitializationParameters.m */; };
+		C330437920D800AA00988ED3 /* OneSignalSetEmailParameters.m in Sources */ = {isa = PBXBuildFile; fileRef = C330437120D800A900988ED3 /* OneSignalSetEmailParameters.m */; };
 		C350BA701D38190C000E7C5A /* AIRExtHelpers.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C350BA6F1D38190C000E7C5A /* AIRExtHelpers.framework */; settings = {ATTRIBUTES = (Required, ); }; };
 		C350BA931D384BF7000E7C5A /* SetSubscriptionFunction.m in Sources */ = {isa = PBXBuildFile; fileRef = C350BA921D384BF7000E7C5A /* SetSubscriptionFunction.m */; };
 		C350BA961D3931BC000E7C5A /* SendTagsFunction.m in Sources */ = {isa = PBXBuildFile; fileRef = C350BA951D3931BC000E7C5A /* SendTagsFunction.m */; };
@@ -124,6 +131,21 @@
 		C32B177120136CA400912AC4 /* OneSignalRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OneSignalRequest.m; sourceTree = "<group>"; };
 		C32B177220136CA400912AC4 /* NSString+OneSignal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+OneSignal.h"; sourceTree = "<group>"; };
 		C32B177320136CA400912AC4 /* OSSubscription.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSSubscription.h; sourceTree = "<group>"; };
+		C330436420D800A800988ED3 /* OSEmailSubscription.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OSEmailSubscription.h; sourceTree = "<group>"; };
+		C330436520D800A800988ED3 /* OneSignalWebOpenDialog.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OneSignalWebOpenDialog.m; sourceTree = "<group>"; };
+		C330436620D800A800988ED3 /* ReattemptRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ReattemptRequest.m; sourceTree = "<group>"; };
+		C330436720D800A800988ED3 /* DelayedInitializationParameters.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DelayedInitializationParameters.h; sourceTree = "<group>"; };
+		C330436820D800A800988ED3 /* NSURL+OneSignal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSURL+OneSignal.h"; sourceTree = "<group>"; };
+		C330436920D800A800988ED3 /* OneSignalExtensionBadgeHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OneSignalExtensionBadgeHandler.h; sourceTree = "<group>"; };
+		C330436A20D800A900988ED3 /* OSEmailSubscription.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OSEmailSubscription.m; sourceTree = "<group>"; };
+		C330436B20D800A900988ED3 /* NSURL+OneSignal.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSURL+OneSignal.m"; sourceTree = "<group>"; };
+		C330436C20D800A900988ED3 /* OneSignalExtensionBadgeHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OneSignalExtensionBadgeHandler.m; sourceTree = "<group>"; };
+		C330436D20D800A900988ED3 /* OneSignalWebOpenDialog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OneSignalWebOpenDialog.h; sourceTree = "<group>"; };
+		C330436E20D800A900988ED3 /* DelayedInitializationParameters.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DelayedInitializationParameters.m; sourceTree = "<group>"; };
+		C330436F20D800A900988ED3 /* OneSignalCommonDefines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OneSignalCommonDefines.h; sourceTree = "<group>"; };
+		C330437020D800A900988ED3 /* OneSignalSetEmailParameters.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OneSignalSetEmailParameters.h; sourceTree = "<group>"; };
+		C330437120D800A900988ED3 /* OneSignalSetEmailParameters.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OneSignalSetEmailParameters.m; sourceTree = "<group>"; };
+		C330437220D800AA00988ED3 /* ReattemptRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ReattemptRequest.h; sourceTree = "<group>"; };
 		C350BA6F1D38190C000E7C5A /* AIRExtHelpers.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = AIRExtHelpers.framework; sourceTree = "<group>"; };
 		C350BA911D384BF7000E7C5A /* SetSubscriptionFunction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SetSubscriptionFunction.h; sourceTree = "<group>"; };
 		C350BA921D384BF7000E7C5A /* SetSubscriptionFunction.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SetSubscriptionFunction.m; sourceTree = "<group>"; };
@@ -230,6 +252,21 @@
 		C3242F051E09A18F00469D93 /* OneSignal */ = {
 			isa = PBXGroup;
 			children = (
+				C330436720D800A800988ED3 /* DelayedInitializationParameters.h */,
+				C330436E20D800A900988ED3 /* DelayedInitializationParameters.m */,
+				C330436820D800A800988ED3 /* NSURL+OneSignal.h */,
+				C330436B20D800A900988ED3 /* NSURL+OneSignal.m */,
+				C330436F20D800A900988ED3 /* OneSignalCommonDefines.h */,
+				C330436920D800A800988ED3 /* OneSignalExtensionBadgeHandler.h */,
+				C330436C20D800A900988ED3 /* OneSignalExtensionBadgeHandler.m */,
+				C330437020D800A900988ED3 /* OneSignalSetEmailParameters.h */,
+				C330437120D800A900988ED3 /* OneSignalSetEmailParameters.m */,
+				C330436D20D800A900988ED3 /* OneSignalWebOpenDialog.h */,
+				C330436520D800A800988ED3 /* OneSignalWebOpenDialog.m */,
+				C330436420D800A800988ED3 /* OSEmailSubscription.h */,
+				C330436A20D800A900988ED3 /* OSEmailSubscription.m */,
+				C330437220D800AA00988ED3 /* ReattemptRequest.h */,
+				C330436620D800A800988ED3 /* ReattemptRequest.m */,
 				C32B177220136CA400912AC4 /* NSString+OneSignal.h */,
 				C32B174A20136CA000912AC4 /* NSString+OneSignal.m */,
 				C32B175920136CA100912AC4 /* OneSignal.h */,
@@ -410,6 +447,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C330437920D800AA00988ED3 /* OneSignalSetEmailParameters.m in Sources */,
 				C32B177D20136CA500912AC4 /* OSNotificationPayload.m in Sources */,
 				C32B178520136CA500912AC4 /* OneSignalTrackFirebaseAnalytics.m in Sources */,
 				C36015BB1D37BBA9002E5373 /* RegisterFunction.m in Sources */,
@@ -417,6 +455,7 @@
 				C36015B81D37B5B8002E5373 /* AIROneSignal.m in Sources */,
 				C3073AE81BE2C77C00EC89B7 /* InitFunction.m in Sources */,
 				C32B178620136CA500912AC4 /* OneSignalWebView.m in Sources */,
+				C330437620D800AA00988ED3 /* NSURL+OneSignal.m in Sources */,
 				C32B177920136CA500912AC4 /* OneSignalClient.m in Sources */,
 				C32B178220136CA500912AC4 /* OneSignalAlertViewDelegate.m in Sources */,
 				C32B178120136CA500912AC4 /* OneSignalTrackIAP.m in Sources */,
@@ -425,11 +464,13 @@
 				C32B177820136CA500912AC4 /* OSPermission.m in Sources */,
 				C350BA961D3931BC000E7C5A /* SendTagsFunction.m in Sources */,
 				C32B177420136CA500912AC4 /* UIApplicationDelegate+OneSignal.m in Sources */,
+				C330437520D800AA00988ED3 /* OSEmailSubscription.m in Sources */,
 				C32B177520136CA500912AC4 /* OneSignalSelectorHelpers.m in Sources */,
 				C32B178720136CA500912AC4 /* OneSignalTracker.m in Sources */,
 				C32B178320136CA500912AC4 /* OneSignalHelper.m in Sources */,
 				C32B178A20136CA500912AC4 /* OSSubscription.m in Sources */,
 				C3B0B6E81D3CF9CF00E920AA /* PostNotificationFunction.m in Sources */,
+				C330437420D800AA00988ED3 /* ReattemptRequest.m in Sources */,
 				C3242F311E09A23C00469D93 /* OneSignalReachability.m in Sources */,
 				C3242F301E09A23C00469D93 /* OneSignalMobileProvision.m in Sources */,
 				C32B177B20136CA500912AC4 /* OSObservable.m in Sources */,
@@ -447,10 +488,13 @@
 				C350BA991D393214000E7C5A /* DeleteTagsFunction.m in Sources */,
 				C3242F2F1E09A23C00469D93 /* OneSignalJailbreakDetection.m in Sources */,
 				C3FA9F991FEBCF5900D325C7 /* ClearNotificationsFunction.m in Sources */,
+				C330437720D800AA00988ED3 /* OneSignalExtensionBadgeHandler.m in Sources */,
 				C37A12791D3A3B7600FD0CF4 /* AreNotificationsEnabledFunction.m in Sources */,
 				C3DB22121D96A660005B84B3 /* IdsAvailableFunction.m in Sources */,
+				C330437320D800AA00988ED3 /* OneSignalWebOpenDialog.m in Sources */,
 				C32B177C20136CA500912AC4 /* OneSignalNotificationSettingsIOS7.m in Sources */,
 				C37A127C1D3A44D700FD0CF4 /* AreNotificationsAvailableFunction.m in Sources */,
+				C330437820D800AA00988ED3 /* DelayedInitializationParameters.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

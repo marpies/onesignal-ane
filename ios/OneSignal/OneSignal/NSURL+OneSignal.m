@@ -25,23 +25,16 @@
  * THE SOFTWARE.
  */
 
-#import <Foundation/Foundation.h>
+#import "NSURL+OneSignal.h"
 
-typedef enum {GET, POST, HEAD, PUT, DELETE, OPTIONS, CONNECT, TRACE} HTTPMethod;
-#define httpMethodString(enum) [@[@"GET", @"POST", @"HEAD", @"PUT", @"DELETE", @"OPTIONS", @"CONNECT", @"TRACE"] objectAtIndex:enum]
-
-
-#ifndef OneSignalRequest_h
-#define OneSignalRequest_h
-
-@interface OneSignalRequest : NSObject
-
-@property (nonatomic) HTTPMethod method;
-@property (nonatomic, nonnull) NSString *path;
-@property (nonatomic, nullable) NSDictionary *parameters;
-@property (nonatomic) int reattemptCount;
--(BOOL)missingAppId; //for requests that don't require an appId parameter, the subclass should override this method and return false
--(NSMutableURLRequest * _Nonnull )request;
+@implementation NSURL (OneSignal)
+- (NSString *)valueFromQueryParameter:(NSString *)parameter {
+    NSURLComponents *components = [NSURLComponents componentsWithURL:self resolvingAgainstBaseURL:false];
+    
+    for(NSURLQueryItem *item in components.queryItems)
+        if([item.name isEqualToString:parameter])
+            return item.value;
+    
+    return nil;
+}
 @end
-
-#endif

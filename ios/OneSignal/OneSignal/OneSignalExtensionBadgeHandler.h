@@ -26,22 +26,12 @@
  */
 
 #import <Foundation/Foundation.h>
+#import <UserNotifications/UserNotifications.h>
+#import "OneSignal.h"
 
-typedef enum {GET, POST, HEAD, PUT, DELETE, OPTIONS, CONNECT, TRACE} HTTPMethod;
-#define httpMethodString(enum) [@[@"GET", @"POST", @"HEAD", @"PUT", @"DELETE", @"OPTIONS", @"CONNECT", @"TRACE"] objectAtIndex:enum]
-
-
-#ifndef OneSignalRequest_h
-#define OneSignalRequest_h
-
-@interface OneSignalRequest : NSObject
-
-@property (nonatomic) HTTPMethod method;
-@property (nonatomic, nonnull) NSString *path;
-@property (nonatomic, nullable) NSDictionary *parameters;
-@property (nonatomic) int reattemptCount;
--(BOOL)missingAppId; //for requests that don't require an appId parameter, the subclass should override this method and return false
--(NSMutableURLRequest * _Nonnull )request;
+@interface OneSignalExtensionBadgeHandler : NSObject
++ (void)handleBadgeCountWithNotificationRequest:(UNNotificationRequest *)request withNotificationPayload:(OSNotificationPayload *)payload withMutableNotificationContent:(UNMutableNotificationContent *)replacementContent;
++ (void)updateCachedBadgeValue:(NSInteger)value;
++ (NSInteger)currentCachedBadgeValue;
++ (NSString *)appGroupName;
 @end
-
-#endif

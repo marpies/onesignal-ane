@@ -38,6 +38,13 @@
 
 #import <objc/runtime.h>
 
+#import "OneSignalWebOpenDialog.h"
+#import "OneSignalInternal.h"
+
+#import "NSString+OneSignal.h"
+#import "NSURL+OneSignal.h"
+
+#import "OneSignalCommonDefines.h"
 
 #define NOTIFICATION_TYPE_ALL 7
 #pragma clang diagnostic push
@@ -101,12 +108,12 @@
 @end
 
 @interface NSURLSession (DirectDownload)
-+ (BOOL)downloadItemAtURL:(NSURL *)url toFile:(NSString *)localPath error:(NSError *)error;
++ (NSString *)downloadItemAtURL:(NSURL *)url toFile:(NSString *)localPath error:(NSError *)error;
 @end
 
 @implementation NSURLSession (DirectDownload)
 
-+ (BOOL)downloadItemAtURL:(NSURL *)url toFile:(NSString *)localPath error:(NSError *)error {
++ (NSString *)downloadItemAtURL:(NSURL *)url toFile:(NSString *)localPath error:(NSError *)error {
     NSMutableURLRequest *request = [[NSMutableURLRequest alloc] initWithURL:url];
     
     DirectDownloadDelegate *delegate = [[DirectDownloadDelegate alloc] initWithFilePath:localPath];
@@ -128,10 +135,10 @@
         if (error != nil) {
             error = downloadError;
         }
-        return false;
+        return nil;
     }
     
-    return true;
+    return delegate.response.MIMEType;
 }
 
 @end
@@ -328,15 +335,18 @@ OSHandleNotificationActionBlock handleNotificationAction;
     NSMutableDictionary* userInfo, *customDict, *additionalData, *optionsDict;
     BOOL is2dot4Format = false;
     
-    if (remoteUserInfo[@"os_data"][@"buttons"]) {
+    if (remoteUserInfo[@"os_data"]) {
         userInfo = [remoteUserInfo mutableCopy];
         additionalData = [NSMutableDictionary dictionary];
         
-        is2dot4Format = [userInfo[@"os_data"][@"buttons"] isKindOfClass:[NSArray class]];
-        if (is2dot4Format)
-            optionsDict = userInfo[@"os_data"][@"buttons"];
-        else
-           optionsDict = userInfo[@"os_data"][@"buttons"][@"o"];
+        if (remoteUserInfo[@"os_data"][@"buttons"]) {
+            
+            is2dot4Format = [userInfo[@"os_data"][@"buttons"] isKindOfClass:[NSArray class]];
+            if (is2dot4Format)
+                optionsDict = userInfo[@"os_data"][@"buttons"];
+            else
+                optionsDict = userInfo[@"os_data"][@"buttons"][@"o"];
+        }
     }
     else if (remoteUserInfo[@"custom"]) {
         userInfo = [remoteUserInfo mutableCopy];
@@ -347,8 +357,9 @@ OSHandleNotificationActionBlock handleNotificationAction;
             additionalData = [[NSMutableDictionary alloc] init];
         optionsDict = userInfo[@"o"];
     }
-    else
+    else {
         return nil;
+    }
     
     if (optionsDict) {
         NSMutableArray* buttonArray = [[NSMutableArray alloc] init];
@@ -364,12 +375,12 @@ OSHandleNotificationActionBlock handleNotificationAction;
     
     if ([additionalData count] == 0)
         additionalData = nil;
-    
-    if (remoteUserInfo[@"os_data"]) {
+    else if (remoteUserInfo[@"os_data"]) {
         [userInfo addEntriesFromDictionary:additionalData];
         if (!is2dot4Format)
             userInfo[@"aps"] = @{@"alert" : userInfo[@"os_data"][@"buttons"][@"m"]};
     }
+    
     else {
         customDict[@"a"] = additionalData;
         userInfo[@"custom"] = customDict;
@@ -383,14 +394,14 @@ OSHandleNotificationActionBlock handleNotificationAction;
 
 
 // Prevent the OSNotification blocks from firing if we receive a Non-OneSignal remote push
-+ (BOOL)isOneSignalPayload {
-    if (!lastMessageReceived)
++ (BOOL)isOneSignalPayload:(NSDictionary *)payload {
+    if (!payload)
         return NO;
-    return lastMessageReceived[@"custom"][@"i"] || lastMessageReceived[@"os_data"][@"i"];
+    return payload[@"custom"][@"i"] || payload[@"os_data"][@"i"];
 }
 
 + (void)handleNotificationReceived:(OSNotificationDisplayType)displayType {
-    if (!handleNotificationReceived || ![self isOneSignalPayload])
+    if (!handleNotificationReceived || ![self isOneSignalPayload:lastMessageReceived])
         return;
     
     OSNotificationPayload *payload = [OSNotificationPayload parseWithApns:lastMessageReceived];
@@ -408,7 +419,7 @@ OSHandleNotificationActionBlock handleNotificationAction;
 static NSString *_lastMessageIdFromAction;
 
 + (void)handleNotificationAction:(OSNotificationActionType)actionType actionID:(NSString*)actionID displayType:(OSNotificationDisplayType)displayType {
-    if (![self isOneSignalPayload])
+    if (![self isOneSignalPayload:lastMessageReceived])
         return;
     
     OSNotificationAction *action = [[OSNotificationAction alloc] initWithActionType:actionType :actionID];
@@ -534,6 +545,14 @@ static OneSignal* singleInstance = nil;
 
 + (void)registerAsUNNotificationCenterDelegate {
     let curNotifCenter = [UNUserNotificationCenter currentNotificationCenter];
+    
+    /*
+        Sets the OneSignal shared instance as a delegate of UNUserNotificationCenter
+        OneSignal does not implement the delegate methods, we simply set it as a delegate
+        in order to swizzle the UNUserNotificationCenter methods in case the developer
+        does not set a UNUserNotificationCenter delegate themselves
+    */
+    
     if (!curNotifCenter.delegate)
         curNotifCenter.delegate = (id)[self sharedInstance];
 }
@@ -702,43 +721,88 @@ static OneSignal* singleInstance = nil;
 
 }
 
-// Synchroneously downloads a media
-// On success returns bundle resource name, otherwise returns nil
-+ (NSString*)downloadMediaAndSaveInBundle:(NSString*)url {
+/*
+ Synchroneously downloads an attachment
+ On success returns bundle resource name, otherwise returns nil
+ The preference order for file type determination is as follows:
+    1. File extension in the actual URL
+    2. MIME type
+    3. URL Query parameter called 'filename', such as test.jpg. The SDK will extract the file extension from it
+*/
++ (NSString*)downloadMediaAndSaveInBundle:(NSString*)urlString {
     
-    NSArray<NSString*>* supportedExtensions = @[@"aiff", @"wav", @"mp3", @"mp4", @"jpg", @"jpeg", @"png", @"gif", @"mpeg", @"mpg", @"avi", @"m4a", @"m4v"];
-    NSArray* components = [url componentsSeparatedByString:@"."];
+    let url = [NSURL URLWithString:urlString];
     
-    // URL is not to a file
-    if ([components count] < 2)
-        return NULL;
-    NSString* extension = [components lastObject];
+    NSString* extension = url.pathExtension;
+    
+    if ([extension isEqualToString:@""])
+        extension = nil;
     
     // Unrecognized extention
-    if (![supportedExtensions containsObject:extension])
-        return NULL;
+    if (extension != nil && ![ONESIGNAL_SUPPORTED_ATTACHMENT_TYPES containsObject:extension])
+        return nil;
     
-    NSURL* URL = [NSURL URLWithString:url];
+    var name = [self randomStringWithLength:10];
     
+    if (extension)
+        name = [name stringByAppendingString:[NSString stringWithFormat:@".%@", extension]];
     
-    NSString* name = [[self randomStringWithLength:10] stringByAppendingString:[NSString stringWithFormat:@".%@", extension]];
     NSArray* paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
     NSString* filePath = [paths[0] stringByAppendingPathComponent:name];
     
-    NSError* error = nil;
-    [NSURLSession downloadItemAtURL:URL toFile:filePath error:error];
-    NSArray* cachedFiles = [[NSUserDefaults standardUserDefaults] objectForKey:@"CACHED_MEDIA"];
-    NSMutableArray* appendedCache;
-    if (cachedFiles) {
-        appendedCache = [[NSMutableArray alloc] initWithArray:cachedFiles];
-        [appendedCache addObject:name];
-    }
-    else
-        appendedCache = [[NSMutableArray alloc] initWithObjects:name, nil];
+    //guard against situations where for example, available storage is too low
     
-    [[NSUserDefaults standardUserDefaults] setObject:appendedCache forKey:@"CACHED_MEDIA"];
-    [[NSUserDefaults standardUserDefaults] synchronize];
-    return name;
+    @try {
+        NSError* error = nil;
+        let mimeType = [NSURLSession downloadItemAtURL:url toFile:filePath error:error];
+        
+        if (error) {
+            [OneSignal onesignal_Log:ONE_S_LL_ERROR message:[NSString stringWithFormat:@"Encountered an error while attempting to download file with URL: %@", error]];
+            return nil;
+        }
+        
+        if (!extension) {
+            NSString *newExtension;
+            
+            if (mimeType != nil && ![mimeType isEqualToString:@""]) {
+                newExtension = mimeType.fileExtensionForMimeType;
+            } else {
+                newExtension = [[[NSURL URLWithString:urlString] valueFromQueryParameter:@"filename"] supportedFileExtension];
+            }
+            
+            if (!newExtension || ![ONESIGNAL_SUPPORTED_ATTACHMENT_TYPES containsObject:newExtension])
+                return nil;
+            
+            name = [NSString stringWithFormat:@"%@.%@", name, newExtension];
+            
+            let newPath = [paths[0] stringByAppendingPathComponent:[NSString stringWithFormat:@"%@", name]];
+            
+            [[NSFileManager defaultManager] moveItemAtPath:filePath toPath:newPath error:&error];
+        }
+        
+        if (error) {
+            [OneSignal onesignal_Log:ONE_S_LL_ERROR message:[NSString stringWithFormat:@"Encountered an error while attempting to download file with URL: %@", error]];
+            return nil;
+        }
+        
+        NSArray* cachedFiles = [[NSUserDefaults standardUserDefaults] objectForKey:@"CACHED_MEDIA"];
+        NSMutableArray* appendedCache;
+        if (cachedFiles) {
+            appendedCache = [[NSMutableArray alloc] initWithArray:cachedFiles];
+            [appendedCache addObject:name];
+        }
+        else
+            appendedCache = [[NSMutableArray alloc] initWithObjects:name, nil];
+        
+        [[NSUserDefaults standardUserDefaults] setObject:appendedCache forKey:@"CACHED_MEDIA"];
+        [[NSUserDefaults standardUserDefaults] synchronize];
+        return name;
+    } @catch (NSException *exception) {
+        [OneSignal onesignal_Log:ONE_S_LL_ERROR message:[NSString stringWithFormat:@"OneSignal encountered an exception while downloading file (%@), exception: %@", url, exception.description]];
+        
+        return nil;
+    }
+
 }
 
 +(void)clearCachedMedia {
@@ -776,7 +840,7 @@ static OneSignal* singleInstance = nil;
 + (void) displayWebView:(NSURL*)url {
     
     // Check if in-app or safari
-    BOOL inAppLaunch = YES;
+    __block BOOL inAppLaunch = YES;
     if( ![[NSUserDefaults standardUserDefaults] objectForKey:@"ONESIGNAL_INAPP_LAUNCH_URL"]) {
         [[NSUserDefaults standardUserDefaults] setObject:@YES forKey:@"ONESIGNAL_INAPP_LAUNCH_URL"];
         [[NSUserDefaults standardUserDefaults] synchronize];
@@ -786,23 +850,38 @@ static OneSignal* singleInstance = nil;
     
     // If the URL contains itunes.apple.com, it's an app store link
     // that should be opened using sharedApplication openURL
-    if ([[url absoluteString] containsString:@"itunes.apple.com"]) {
+    if ([[url absoluteString] rangeOfString:@"itunes.apple.com"].location != NSNotFound) {
         inAppLaunch = NO;
     }
     
-    if (inAppLaunch && [self isWWWScheme:url]) {
-        if (!webVC)
-            webVC = [[OneSignalWebView alloc] init];
-        webVC.url = url;
-        [webVC showInApp];
-    }
-    else {
-        // Keep dispatch_async. Without this the url can take an extra 2 to 10 secounds to open.
-         [OneSignalHelper dispatch_async_on_main_queue: ^{
-            [[UIApplication sharedApplication] openURL:url];
+    __block let openUrlBlock = ^void(BOOL shouldOpen) {
+        if (!shouldOpen)
+            return;
+        
+        [OneSignalHelper dispatch_async_on_main_queue: ^{
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.25 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                if (inAppLaunch && [self isWWWScheme:url]) {
+                    if (!webVC)
+                        webVC = [[OneSignalWebView alloc] init];
+                    webVC.url = url;
+                    [webVC showInApp];
+                }
+                else {
+                    // Keep dispatch_async. Without this the url can take an extra 2 to 10 secounds to open.
+                    [[UIApplication sharedApplication] openURL:url];
+                }
+            });
         }];
-    }
+    };
     
+    if ([OneSignal shouldPromptToShowURL]) {
+        [OneSignalWebOpenDialog showOpenDialogwithURL:url withResponse:^(BOOL shouldOpen) {
+            openUrlBlock(shouldOpen);
+        }];
+    } else {
+        openUrlBlock(true);
+    }
+        
 }
 
 + (void) runOnMainThread:(void(^)())block {

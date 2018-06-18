@@ -39,6 +39,8 @@
 + (BOOL)sendNotificationTypesUpdate;
 + (BOOL)clearBadgeCount:(BOOL)fromNotifOpened;
 + (NSString*)mUserId;
++ (NSString *)mEmailUserId;
++ (NSString *)mEmailAuthToken;
 
 @end
 
@@ -57,6 +59,9 @@ static BOOL lastOnFocusWasToBackground = YES;
     lastOnFocusWasToBackground = YES;
 }
 
++ (void)setLastOpenedTime:(NSTimeInterval)lastOpened {
+    lastOpenedTime = lastOpened;
+}
 
 
 + (void) beginBackgroundFocusTask {
@@ -73,6 +78,10 @@ static BOOL lastOnFocusWasToBackground = YES;
 
 
 + (void)onFocus:(BOOL)toBackground {
+    
+    // return if the user has not granted privacy permissions
+    if ([OneSignal requiresUserPrivacyConsent])
+        return;
     
     // Prevent the onFocus to be called twice when app being terminated
     //    - Both WillResignActive and willTerminate
@@ -119,7 +128,14 @@ static BOOL lastOnFocusWasToBackground = YES;
     
     // If resuming and badge was set, clear it on the server as well.
     if (wasBadgeSet && !toBackground) {
-        [OneSignalClient.sharedClient executeRequest:[OSRequestOnFocus withUserId:[OneSignal mUserId] appId:[OneSignal app_id] badgeCount:@0] onSuccess:nil onFailure:nil];
+        NSMutableDictionary *requests = [NSMutableDictionary new];
+        
+        requests[@"push"] = [OSRequestOnFocus withUserId:[OneSignal mUserId] appId:[OneSignal app_id] badgeCount:@0 emailAuthToken:nil];
+        
+        if ([OneSignal mEmailUserId])
+            requests[@"email"] = [OSRequestOnFocus withUserId:[OneSignal mEmailUserId] appId:[OneSignal app_id] badgeCount:@0 emailAuthToken:[OneSignal mEmailAuthToken]];
+        
+        [OneSignalClient.sharedClient executeSimultaneousRequests:requests withSuccess:nil onFailure:nil];
         
         return;
     }
@@ -130,7 +146,14 @@ static BOOL lastOnFocusWasToBackground = YES;
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             [OneSignalTracker beginBackgroundFocusTask];
             
-            [OneSignalClient.sharedClient executeSynchronousRequest:[OSRequestOnFocus withUserId:[OneSignal mUserId] appId:[OneSignal app_id] state:@"ping" type:@1 activeTime:@(timeToPingWith) netType:[OneSignalHelper getNetType]] onSuccess:nil onFailure:nil];
+            NSMutableDictionary *requests = [NSMutableDictionary new];
+            
+            requests[@"push"] = [OSRequestOnFocus withUserId:[OneSignal mUserId] appId:[OneSignal app_id] state:@"ping" type:@1 activeTime:@(timeToPingWith) netType:[OneSignalHelper getNetType] emailAuthToken:nil];
+            
+            if ([OneSignal mEmailUserId])
+                requests[@"email"] = [OSRequestOnFocus withUserId:[OneSignal mEmailUserId] appId:[OneSignal app_id] state:@"ping" type:@1 activeTime:@(timeToPingWith) netType:[OneSignalHelper getNetType] emailAuthToken:[OneSignal mEmailAuthToken]];
+            
+            [OneSignalClient.sharedClient executeSimultaneousRequests:requests withSuccess:nil onFailure:nil];
             
             [OneSignalTracker endBackgroundFocusTask];
         });

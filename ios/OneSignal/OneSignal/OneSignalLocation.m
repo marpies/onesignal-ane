@@ -35,7 +35,9 @@
 
 @interface OneSignal ()
 void onesignal_Log(ONE_S_LOG_LEVEL logLevel, NSString* message);
++ (NSString *)mEmailUserId;
 + (NSString*)mUserId;
++ (NSString *)mEmailAuthToken;
 @end
 
 @implementation OneSignalLocation
@@ -106,6 +108,10 @@ static OneSignalLocation* singleInstance = nil;
 }
 
 + (void)onfocus:(BOOL)isActive {
+    
+    // return if the user has not granted privacy permissions
+    if ([OneSignal requiresUserPrivacyConsent])
+        return;
     
     if(!locationManager || !started) return;
     
@@ -179,7 +185,7 @@ static OneSignalLocation* singleInstance = nil;
         //LocationAlways > LocationWhenInUse > No entry (Log error)
         //Location Always requires: Location Background Mode + NSLocationAlwaysUsageDescription
         NSArray* backgroundModes = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"UIBackgroundModes"];
-        NSString* alwaysDescription = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"NSLocationAlwaysUsageDescription"];
+        NSString* alwaysDescription = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"NSLocationAlwaysUsageDescription"] ?: [[NSBundle mainBundle] objectForInfoDictionaryKey:@"NSLocationAlwaysAndWhenInUseUsageDescription"];
         if(backgroundModes && [backgroundModes containsObject:@"location"] && alwaysDescription) {
             [locationManager performSelector:@selector(requestAlwaysAuthorization)];
             if (deviceOSVersion >= 9.0) {
@@ -204,6 +210,10 @@ static OneSignalLocation* singleInstance = nil;
 #pragma mark CLLocationManagerDelegate
 
 - (void)locationManager:(id)manager didUpdateLocations:(NSArray *)locations {
+    
+    // return if the user has not granted privacy permissions
+    if ([OneSignal requiresUserPrivacyConsent])
+        return;
     
     [manager performSelector:@selector(stopUpdatingLocation)];
     
@@ -245,6 +255,11 @@ static OneSignalLocation* singleInstance = nil;
 }
 
 + (void)sendLocation {
+    
+    // return if the user has not granted privacy permissions
+    if ([OneSignal requiresUserPrivacyConsent])
+        return;
+    
     @synchronized(OneSignalLocation.mutexObjectForLastLocation) {
         if (!lastLocation || ![OneSignal mUserId]) return;
         
@@ -254,7 +269,14 @@ static OneSignalLocation* singleInstance = nil;
         
         initialLocationSent = YES;
         
-        [OneSignalClient.sharedClient executeRequest:[OSRequestSendLocation withUserId:[OneSignal mUserId] appId:[OneSignal app_id] location:lastLocation networkType:[OneSignalHelper getNetType] backgroundState:([UIApplication sharedApplication].applicationState != UIApplicationStateActive)] onSuccess:nil onFailure:nil];
+        NSMutableDictionary *requests = [NSMutableDictionary new];
+        
+        if ([OneSignal mEmailUserId])
+            requests[@"email"] = [OSRequestSendLocation withUserId:[OneSignal mEmailUserId] appId:[OneSignal app_id] location:lastLocation networkType:[OneSignalHelper getNetType] backgroundState:([UIApplication sharedApplication].applicationState != UIApplicationStateActive) emailAuthHashToken:[OneSignal mEmailAuthToken]];
+        
+        requests[@"push"] = [OSRequestSendLocation withUserId:[OneSignal mUserId] appId:[OneSignal app_id] location:lastLocation networkType:[OneSignalHelper getNetType] backgroundState:([UIApplication sharedApplication].applicationState != UIApplicationStateActive) emailAuthHashToken:nil];
+        
+        [OneSignalClient.sharedClient executeSimultaneousRequests:requests withSuccess:nil onFailure:nil];
     }
     
 }

@@ -27,6 +27,9 @@
 #import "Functions/PostNotificationFunction.h"
 #import "Functions/IdsAvailableFunction.h"
 #import "Functions/ClearNotificationsFunction.h"
+#import "Functions/ProvideUserConsentFunction.h"
+#import "Functions/SetRequiresUserPrivacyConsentFunction.h"
+#import "Functions/GetUserProvidedPrivacyConsentFunction.h"
 
 static BOOL AIROneSignalLogEnabled = NO;
 FREContext AIROneSignalExtContext = nil;
@@ -74,18 +77,21 @@ static AIROneSignal* AIROneSignalSharedInstance = nil;
  **/
 
 FRENamedFunction AIROneSignal_extFunctions[] = {
-    { (const uint8_t*) "init",                      0, pushos_init },
-    { (const uint8_t*) "register",                  0, pushos_register },
-    { (const uint8_t*) "sdkVersion",                0, pushos_sdkVersion },
-    { (const uint8_t*) "setSubscription",           0, pushos_setSubscription },
-    { (const uint8_t*) "sendTags",                  0, pushos_sendTags },
-    { (const uint8_t*) "deleteTags",                0, pushos_deleteTags },
-    { (const uint8_t*) "getTags",                   0, pushos_getTags },
-    { (const uint8_t*) "areNotificationsEnabled",   0, pushos_notificationsEnabled },
-    { (const uint8_t*) "areNotificationsAvailable", 0, pushos_notificationsAvailable },
-    { (const uint8_t*) "postNotification",          0, pushos_postNotification },
-    { (const uint8_t*) "idsAvailable",              0, pushos_idsAvailable },
-    { (const uint8_t*) "clearNotifications",        0, pushos_clearNotifications }
+    { (const uint8_t*) "init",                          0, pushos_init },
+    { (const uint8_t*) "register",                      0, pushos_register },
+    { (const uint8_t*) "sdkVersion",                    0, pushos_sdkVersion },
+    { (const uint8_t*) "setSubscription",               0, pushos_setSubscription },
+    { (const uint8_t*) "sendTags",                      0, pushos_sendTags },
+    { (const uint8_t*) "deleteTags",                    0, pushos_deleteTags },
+    { (const uint8_t*) "getTags",                       0, pushos_getTags },
+    { (const uint8_t*) "areNotificationsEnabled",       0, pushos_notificationsEnabled },
+    { (const uint8_t*) "areNotificationsAvailable",     0, pushos_notificationsAvailable },
+    { (const uint8_t*) "postNotification",              0, pushos_postNotification },
+    { (const uint8_t*) "idsAvailable",                  0, pushos_idsAvailable },
+    { (const uint8_t*) "clearNotifications",            0, pushos_clearNotifications },
+    { (const uint8_t*) "setRequiresUserPrivacyConsent", 0, pushos_setRequiresUserPrivacyConsent },
+    { (const uint8_t*) "provideUserConsent",            0, pushos_provideUserConsent },
+    { (const uint8_t*) "userProvidedPrivacyConsent",    0, pushos_userProvidedPrivacyConsent }
 };
 
 void OneSignalContextInitializer( void* extData, const uint8_t* ctxType, FREContext ctx, uint32_t* numFunctionsToSet, const FRENamedFunction** functionsToSet ) {

@@ -42,6 +42,9 @@
 		C330437720D800AA00988ED3 /* OneSignalExtensionBadgeHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = C330436C20D800A900988ED3 /* OneSignalExtensionBadgeHandler.m */; };
 		C330437820D800AA00988ED3 /* DelayedInitializationParameters.m in Sources */ = {isa = PBXBuildFile; fileRef = C330436E20D800A900988ED3 /* DelayedInitializationParameters.m */; };
 		C330437920D800AA00988ED3 /* OneSignalSetEmailParameters.m in Sources */ = {isa = PBXBuildFile; fileRef = C330437120D800A900988ED3 /* OneSignalSetEmailParameters.m */; };
+		C330437C20D8524300988ED3 /* SetRequiresUserPrivacyConsentFunction.m in Sources */ = {isa = PBXBuildFile; fileRef = C330437B20D8524300988ED3 /* SetRequiresUserPrivacyConsentFunction.m */; };
+		C330437F20D852BB00988ED3 /* ProvideUserConsentFunction.m in Sources */ = {isa = PBXBuildFile; fileRef = C330437E20D852BB00988ED3 /* ProvideUserConsentFunction.m */; };
+		C330438220D8530500988ED3 /* GetUserProvidedPrivacyConsentFunction.m in Sources */ = {isa = PBXBuildFile; fileRef = C330438120D8530500988ED3 /* GetUserProvidedPrivacyConsentFunction.m */; };
 		C350BA701D38190C000E7C5A /* AIRExtHelpers.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C350BA6F1D38190C000E7C5A /* AIRExtHelpers.framework */; settings = {ATTRIBUTES = (Required, ); }; };
 		C350BA931D384BF7000E7C5A /* SetSubscriptionFunction.m in Sources */ = {isa = PBXBuildFile; fileRef = C350BA921D384BF7000E7C5A /* SetSubscriptionFunction.m */; };
 		C350BA961D3931BC000E7C5A /* SendTagsFunction.m in Sources */ = {isa = PBXBuildFile; fileRef = C350BA951D3931BC000E7C5A /* SendTagsFunction.m */; };
@@ -146,6 +149,12 @@
 		C330437020D800A900988ED3 /* OneSignalSetEmailParameters.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OneSignalSetEmailParameters.h; sourceTree = "<group>"; };
 		C330437120D800A900988ED3 /* OneSignalSetEmailParameters.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OneSignalSetEmailParameters.m; sourceTree = "<group>"; };
 		C330437220D800AA00988ED3 /* ReattemptRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ReattemptRequest.h; sourceTree = "<group>"; };
+		C330437A20D8524300988ED3 /* SetRequiresUserPrivacyConsentFunction.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SetRequiresUserPrivacyConsentFunction.h; sourceTree = "<group>"; };
+		C330437B20D8524300988ED3 /* SetRequiresUserPrivacyConsentFunction.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SetRequiresUserPrivacyConsentFunction.m; sourceTree = "<group>"; };
+		C330437D20D852BB00988ED3 /* ProvideUserConsentFunction.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ProvideUserConsentFunction.h; sourceTree = "<group>"; };
+		C330437E20D852BB00988ED3 /* ProvideUserConsentFunction.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ProvideUserConsentFunction.m; sourceTree = "<group>"; };
+		C330438020D8530500988ED3 /* GetUserProvidedPrivacyConsentFunction.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GetUserProvidedPrivacyConsentFunction.h; sourceTree = "<group>"; };
+		C330438120D8530500988ED3 /* GetUserProvidedPrivacyConsentFunction.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = GetUserProvidedPrivacyConsentFunction.m; sourceTree = "<group>"; };
 		C350BA6F1D38190C000E7C5A /* AIRExtHelpers.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = AIRExtHelpers.framework; sourceTree = "<group>"; };
 		C350BA911D384BF7000E7C5A /* SetSubscriptionFunction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SetSubscriptionFunction.h; sourceTree = "<group>"; };
 		C350BA921D384BF7000E7C5A /* SetSubscriptionFunction.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SetSubscriptionFunction.m; sourceTree = "<group>"; };
@@ -245,6 +254,12 @@
 				C3B0B6E71D3CF9CF00E920AA /* PostNotificationFunction.m */,
 				C3FA9F971FEBCF5900D325C7 /* ClearNotificationsFunction.h */,
 				C3FA9F981FEBCF5900D325C7 /* ClearNotificationsFunction.m */,
+				C330437A20D8524300988ED3 /* SetRequiresUserPrivacyConsentFunction.h */,
+				C330437B20D8524300988ED3 /* SetRequiresUserPrivacyConsentFunction.m */,
+				C330437D20D852BB00988ED3 /* ProvideUserConsentFunction.h */,
+				C330437E20D852BB00988ED3 /* ProvideUserConsentFunction.m */,
+				C330438020D8530500988ED3 /* GetUserProvidedPrivacyConsentFunction.h */,
+				C330438120D8530500988ED3 /* GetUserProvidedPrivacyConsentFunction.m */,
 			);
 			path = Functions;
 			sourceTree = "<group>";
@@ -466,6 +481,7 @@
 				C32B177420136CA500912AC4 /* UIApplicationDelegate+OneSignal.m in Sources */,
 				C330437520D800AA00988ED3 /* OSEmailSubscription.m in Sources */,
 				C32B177520136CA500912AC4 /* OneSignalSelectorHelpers.m in Sources */,
+				C330438220D8530500988ED3 /* GetUserProvidedPrivacyConsentFunction.m in Sources */,
 				C32B178720136CA500912AC4 /* OneSignalTracker.m in Sources */,
 				C32B178320136CA500912AC4 /* OneSignalHelper.m in Sources */,
 				C32B178A20136CA500912AC4 /* OSSubscription.m in Sources */,
@@ -481,12 +497,14 @@
 				C36015B51D37B4AC002E5373 /* OneSignalUIAppDelegate.m in Sources */,
 				C36015BE1D37E98E002E5373 /* GetSDKVersionFunction.m in Sources */,
 				C32B178920136CA500912AC4 /* OneSignalNotificationSettingsIOS8.m in Sources */,
+				C330437C20D8524300988ED3 /* SetRequiresUserPrivacyConsentFunction.m in Sources */,
 				C350BA9C1D393230000E7C5A /* GetTagsFunction.m in Sources */,
 				C32B177F20136CA500912AC4 /* Requests.m in Sources */,
 				C32B178820136CA500912AC4 /* OneSignalLocation.m in Sources */,
 				C32B177E20136CA500912AC4 /* UNUserNotificationCenter+OneSignal.m in Sources */,
 				C350BA991D393214000E7C5A /* DeleteTagsFunction.m in Sources */,
 				C3242F2F1E09A23C00469D93 /* OneSignalJailbreakDetection.m in Sources */,
+				C330437F20D852BB00988ED3 /* ProvideUserConsentFunction.m in Sources */,
 				C3FA9F991FEBCF5900D325C7 /* ClearNotificationsFunction.m in Sources */,
 				C330437720D800AA00988ED3 /* OneSignalExtensionBadgeHandler.m in Sources */,
 				C37A12791D3A3B7600FD0CF4 /* AreNotificationsEnabledFunction.m in Sources */,

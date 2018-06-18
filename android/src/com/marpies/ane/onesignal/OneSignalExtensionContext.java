@@ -42,6 +42,9 @@ public class OneSignalExtensionContext extends FREContext {
 		functions.put( "postNotification", new PostNotificationFunction() );
 		functions.put( "idsAvailable", new IdsAvailableFunction() );
 		functions.put( "clearNotifications", new ClearNotificationsFunction() );
+		functions.put( "setRequiresUserPrivacyConsent", new SetRequiresUserPrivacyConsentFunction() );
+		functions.put( "provideUserConsent", new ProvideUserConsentFunction() );
+		functions.put( "userProvidedPrivacyConsent", new GetUserProvidedPrivacyConsentFunction() );
 
 		return functions;
 	}

@@ -71,8 +71,8 @@ static NSString* const kPushOSDefaultsSubscriptionKey = @"pushos_subscription";
         /* The OneSignal backend is not notified in this case, do it manually here */
         NSDictionary* osNotification = launchOptions[UIApplicationLaunchOptionsRemoteNotificationKey];
         NSDictionary* osCustom = osNotification[@"custom"];
-        NSString* messageId = osCustom[@"i"];
-        if( osCustom != nil && messageId != nil ) {
+        NSString* messageId = (osCustom != nil) ? osCustom[@"i"] : nil;
+        if( messageId != nil ) {
             [OneSignal submitNotificationOpened:messageId];
         }
     }

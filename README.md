@@ -345,6 +345,10 @@ The ANE has been written by [Marcel Piestansky](https://twitter.com/marpies) and
 
 ## Changelog
 
+#### June 19, 2018 (v1.4.1)
+
+* FIXED conditional evaluation
+
 #### June 18, 2018 (v1.4.0)
 
 * UPDATED OneSignal SDKs for both iOS (v2.8.5) and Android (v3.9.1)

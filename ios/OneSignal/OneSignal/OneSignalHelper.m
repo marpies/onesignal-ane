@@ -27,24 +27,17 @@
 
 #import <UIKit/UIKit.h>
 #import <Foundation/Foundation.h>
-
 #import <CommonCrypto/CommonDigest.h>
-
 #import "OneSignalReachability.h"
 #import "OneSignalHelper.h"
 #import "OSNotificationPayload+Internal.h"
-
 #import "OneSignalTrackFirebaseAnalytics.h"
-
 #import <objc/runtime.h>
-
-#import "OneSignalWebOpenDialog.h"
 #import "OneSignalInternal.h"
-
 #import "NSString+OneSignal.h"
 #import "NSURL+OneSignal.h"
-
 #import "OneSignalCommonDefines.h"
+#import "OneSignalDialogController.h"
 
 #define NOTIFICATION_TYPE_ALL 7
 #pragma clang diagnostic push
@@ -108,12 +101,12 @@
 @end
 
 @interface NSURLSession (DirectDownload)
-+ (NSString *)downloadItemAtURL:(NSURL *)url toFile:(NSString *)localPath error:(NSError *)error;
++ (NSString *)downloadItemAtURL:(NSURL *)url toFile:(NSString *)localPath error:(NSError **)error;
 @end
 
 @implementation NSURLSession (DirectDownload)
 
-+ (NSString *)downloadItemAtURL:(NSURL *)url toFile:(NSString *)localPath error:(NSError *)error {
++ (NSString *)downloadItemAtURL:(NSURL *)url toFile:(NSString *)localPath error:(NSError **)error {
     NSMutableURLRequest *request = [[NSMutableURLRequest alloc] initWithURL:url];
     
     DirectDownloadDelegate *delegate = [[DirectDownloadDelegate alloc] initWithFilePath:localPath];
@@ -132,9 +125,8 @@
     
     NSError *downloadError = [delegate error];
     if (downloadError != nil) {
-        if (error != nil) {
-            error = downloadError;
-        }
+        if (error)
+            *error = downloadError;
         return nil;
     }
     
@@ -377,7 +369,7 @@ OSHandleNotificationActionBlock handleNotificationAction;
         additionalData = nil;
     else if (remoteUserInfo[@"os_data"]) {
         [userInfo addEntriesFromDictionary:additionalData];
-        if (!is2dot4Format)
+        if (!is2dot4Format && userInfo[@"os_data"][@"buttons"])
             userInfo[@"aps"] = @{@"alert" : userInfo[@"os_data"][@"buttons"][@"m"]};
     }
     
@@ -753,8 +745,8 @@ static OneSignal* singleInstance = nil;
     //guard against situations where for example, available storage is too low
     
     @try {
-        NSError* error = nil;
-        let mimeType = [NSURLSession downloadItemAtURL:url toFile:filePath error:error];
+        NSError* error;
+        let mimeType = [NSURLSession downloadItemAtURL:url toFile:filePath error:&error];
         
         if (error) {
             [OneSignal onesignal_Log:ONE_S_LL_ERROR message:[NSString stringWithFormat:@"Encountered an error while attempting to download file with URL: %@", error]];
@@ -875,8 +867,13 @@ static OneSignal* singleInstance = nil;
     };
     
     if ([OneSignal shouldPromptToShowURL]) {
-        [OneSignalWebOpenDialog showOpenDialogwithURL:url withResponse:^(BOOL shouldOpen) {
-            openUrlBlock(shouldOpen);
+        let message = NSLocalizedString(([NSString stringWithFormat:@"Would you like to open %@://%@", url.scheme, url.host]), @"Asks whether the user wants to open the URL");
+        let title = NSLocalizedString(@"Open Website?", @"A title asking if the user wants to open a URL/website");
+        let openAction = NSLocalizedString(@"Open", @"Allows the user to open the URL/website");
+        let cancelAction = NSLocalizedString(@"Cancel", @"The user won't open the URL/website");
+        
+        [[OneSignalDialogController sharedInstance] presentDialogWithTitle:title withMessage:message withAction:openAction cancelTitle:cancelAction withActionCompletion:^(BOOL tappedAction) {
+            openUrlBlock(tappedAction);
         }];
     } else {
         openUrlBlock(true);

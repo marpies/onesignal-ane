@@ -1,7 +1,7 @@
 /**
  * Modified MIT License
  *
- * Copyright 2016 OneSignal
+ * Copyright 2017 OneSignal
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,10 +25,15 @@
  * THE SOFTWARE.
  */
 
-@interface OneSignalHTTPClient : NSObject
+#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
-@property (readonly, nonatomic) NSURL *baseURL;
+NS_ASSUME_NONNULL_BEGIN
+typedef void (^OSDialogActionCompletion)(BOOL tappedAction);
 
-- (NSMutableURLRequest*) requestWithMethod:(NSString*)method
-                                      path:(NSString*)path;
+@interface OneSignalDialogController : NSObject <UIAlertViewDelegate>
++ (instancetype _Nonnull)sharedInstance;
+- (void)presentDialogWithTitle:(NSString * _Nonnull)title withMessage:(NSString * _Nonnull)message withAction:(NSString * _Nullable)actionTitle cancelTitle:(NSString * _Nonnull)cancelTitle withActionCompletion:(OSDialogActionCompletion _Nullable)completion;
 @end
+
+NS_ASSUME_NONNULL_END

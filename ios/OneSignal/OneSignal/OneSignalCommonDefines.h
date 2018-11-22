@@ -46,6 +46,29 @@
 #define EMAIL_ADDRESS @"EMAIL_ADDRESS"
 #define PROMPT_BEFORE_OPENING_PUSH_URL @"PROMPT_BEFORE_OPENING_PUSH_URL"
 #define DEPRECATED_SELECTORS @[@"application:didReceiveLocalNotification:", @"application:handleActionWithIdentifier:forLocalNotification:completionHandler:", @"application:handleActionWithIdentifier:forLocalNotification:withResponseInfo:completionHandler:"]
+#define USES_PROVISIONAL_AUTHORIZATION @"ONESIGNAL_USES_PROVISIONAL_PUSH_AUTHORIZATION"
+#define PERMISSION_HAS_PROMPTED @"OS_HAS_PROMPTED_FOR_NOTIFICATIONS_LAST"
+#define PERMISSION_ANSWERED_PROMPT @"OS_NOTIFICATION_PROMPT_ANSWERED_LAST"
+#define PERMISSION_ACCEPTED @"ONESIGNAL_ACCEPTED_NOTIFICATION_LAST"
+#define PERMISSION_PROVISIONAL_STATUS @"ONESIGNAL_PROVISIONAL_AUTHORIZATION_LAST"
+#define PERMISSION_PROVIDES_NOTIFICATION_SETTINGS @"OS_APP_PROVIDES_NOTIFICATION_SETTINGS"
+
+// To avoid undefined symbol compiler errors on older versions of Xcode,
+// instead of using UNAuthorizationOptionProvisional directly, we will use
+// it indirectly with these macros
+#define PROVISIONAL_UNAUTHORIZATIONOPTION (UNAuthorizationOptions)(1 << 6)
+#define PROVIDES_SETTINGS_UNAUTHORIZATIONOPTION (UNAuthorizationOptions)(1 << 5)
+
+// These options are defined in all versions of iOS that we support, so we
+// can use them directly.
+#define DEFAULT_UNAUTHORIZATIONOPTIONS (UNAuthorizationOptionSound + UNAuthorizationOptionBadge + UNAuthorizationOptionAlert)
+
+// iOS Parameter Names
+#define IOS_USES_PROVISIONAL_AUTHORIZATION @"uses_provisional_auth"
+#define IOS_REQUIRES_EMAIL_AUTHENTICATION @"require_email_auth"
+
+// Info.plist key
+#define FALLBACK_TO_SETTINGS_MESSAGE @"Onesignal_settings_fallback_message"
 
 // GDPR Privacy Consent
 #define GDPR_CONSENT_GRANTED @"GDPR_CONSENT_GRANTED"
@@ -63,5 +86,54 @@
 #define ONESIGNAL_FB_LAST_NOTIFICATION_ID_RECEIVED @"OS_LAST_RECIEVED_NOTIFICATION_ID"
 
 #define ONESIGNAL_SUPPORTED_ATTACHMENT_TYPES @[@"aiff", @"wav", @"mp3", @"mp4", @"jpg", @"jpeg", @"png", @"gif", @"mpeg", @"mpg", @"avi", @"m4a", @"m4v"]
+
+// OneSignal API Client Defines
+typedef enum {GET, POST, HEAD, PUT, DELETE, OPTIONS, CONNECT, TRACE} HTTPMethod;
+#define httpMethodString(enum) [@[@"GET", @"POST", @"HEAD", @"PUT", @"DELETE", @"OPTIONS", @"CONNECT", @"TRACE"] objectAtIndex:enum]
+
+// Notification types
+#define NOTIFICATION_TYPE_NONE 0
+#define NOTIFICATION_TYPE_BADGE 1
+#define NOTIFICATION_TYPE_SOUND 2
+#define NOTIFICATION_TYPE_ALERT 4
+#define NOTIFICATION_TYPE_ALL 7
+
+#define ERROR_PUSH_CAPABLILITY_DISABLED    -13
+#define ERROR_PUSH_DELEGATE_NEVER_FIRED    -14
+#define ERROR_PUSH_SIMULATOR_NOT_SUPPORTED -15
+#define ERROR_PUSH_UNKNOWN_APNS_ERROR      -16
+#define ERROR_PUSH_OTHER_3000_ERROR        -17
+#define ERROR_PUSH_NEVER_PROMPTED          -18
+#define ERROR_PUSH_PROMPT_NEVER_ANSWERED   -19
+
+// Registration delay
+#define REGISTRATION_DELAY_SECONDS 30.0
+
+// How long the SDK will wait for APNS to respond
+// before registering the user anyways
+#define APNS_TIMEOUT 25.0
+
+#ifndef OS_TEST
+    // OneSignal API Client Defines
+    #define REATTEMPT_DELAY 30.0
+    #define REQUEST_TIMEOUT_REQUEST 120.0 //for most HTTP requests
+    #define REQUEST_TIMEOUT_RESOURCE 120.0 //for loading a resource like an image
+    #define MAX_ATTEMPT_COUNT 3
+
+    // Send tags batch delay
+    #define SEND_TAGS_DELAY 5.0
+#else
+    // Test defines for API Client
+    #define REATTEMPT_DELAY 0.004
+    #define REQUEST_TIMEOUT_REQUEST 0.02 //for most HTTP requests
+    #define REQUEST_TIMEOUT_RESOURCE 0.02 //for loading a resource like an image
+    #define MAX_ATTEMPT_COUNT 3
+
+    // Send tags batch delay
+    #define SEND_TAGS_DELAY 0.005
+#endif
+
+// A max timeout for a request, which might include multiple reattempts
+#define MAX_TIMEOUT ((REQUEST_TIMEOUT_REQUEST * MAX_ATTEMPT_COUNT) + (REATTEMPT_DELAY * MAX_ATTEMPT_COUNT)) * NSEC_PER_SEC
 
 #endif /* OneSignalCommonDefines_h */

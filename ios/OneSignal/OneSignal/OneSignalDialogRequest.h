@@ -1,7 +1,7 @@
 /**
  * Modified MIT License
  *
- * Copyright 2016 OneSignal
+ * Copyright 2017 OneSignal
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,35 +26,20 @@
  */
 
 #import <Foundation/Foundation.h>
-#import "OneSignalHTTPClient.h"
+#import "OneSignalDialogController.h"
 
-#define DEFAULT_PUSH_HOST @"https://onesignal.com/api/v1/"
+NS_ASSUME_NONNULL_BEGIN
 
-@interface OneSignalHTTPClient()
-@property (readwrite, nonatomic) NSURL *baseURL;
-@end
+@interface OSDialogRequest : NSObject
 
-@implementation OneSignalHTTPClient
+@property (strong, nonatomic, nonnull) NSString *title;
+@property (strong, nonatomic, nonnull) NSString *message;
+@property (strong, nonatomic, nullable) NSString *actionTitle;
+@property (strong, nonatomic, nonnull) NSString *cancelTitle;
+@property (nonatomic, nullable) OSDialogActionCompletion completion;
 
-@synthesize baseURL = _baseURL;
-
-- (id)init {
-    self = [super init];
-    if (self)
-        self.baseURL = [NSURL URLWithString:DEFAULT_PUSH_HOST];
-    return self;
-}
-
-- (NSMutableURLRequest*) requestWithMethod:(NSString*)method
-                                       path:(NSString*)path {
-    
-    NSURL* url = [NSURL URLWithString:path relativeToURL:self.baseURL];
-    NSMutableURLRequest *request = [[NSMutableURLRequest alloc] initWithURL:url];
-    [request setHTTPMethod:method];
-    [request setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
-    [request setValue:@"application/json" forHTTPHeaderField:@"Accept"];
-    
-    return request;
-}
+- (instancetype _Nonnull)initWithTitle:(NSString * _Nonnull)title withMessage:(NSString * _Nonnull)message withActionTitle:(NSString * _Nullable)actionTitle withCancelTitle:(NSString * _Nonnull)cancelTitle withCompletion:(OSDialogActionCompletion _Nullable)completion;
 
 @end
+
+NS_ASSUME_NONNULL_END

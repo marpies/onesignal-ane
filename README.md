@@ -13,8 +13,8 @@ Development of this extension is supported by [Master Tigra, Inc.](https://githu
 
 ## Native SDK versions
 
-* iOS `v2.8.5` (May 19, 2018)
-* Android `v3.9.1` (May 19, 2018)
+* iOS `v2.9.3` (Oct 29, 2018)
+* Android `v3.10.3` (Nov 2, 2018)
 
 ## Requirements
 
@@ -38,17 +38,26 @@ First, add the extension's ID to the `extensions` element.
 </extensions>
 ```
 
-If you are targeting Android, add the following extensions from [this repository](https://github.com/marpies/android-dependency-anes) as well (unless you know these libraries are included by some other extensions):
+If you are targeting Android, add the following dependency extensions:
+
+* `com.marpies.firebase.messaging` (see the [releases page](https://github.com/marpies/onesignal-ane/releases))
+* `com.distriqt.Core` (https://github.com/distriqt/ANE-Core)
+* `com.distriqt.androidsupport.V4` (https://github.com/distriqt/ANE-AndroidSupport)
+* `com.distriqt.playservices.Base` (https://github.com/distriqt/ANE-GooglePlayServices)
+* `com.distriqt.Firebase` (https://github.com/distriqt/ANE-Firebase)
+
+> Credits to [Distriqt](https://github.com/distriqt) for providing these and other high quality extensions.
+
+Your app descriptor should now contain the following:
 
 ```xml
 <extensions>
-    <extensionID>com.marpies.ane.androidsupport</extensionID>
-    <extensionID>com.marpies.ane.googleplayservices.iid</extensionID>
-    <extensionID>com.marpies.ane.googleplayservices.gcm</extensionID>
-    <extensionID>com.marpies.ane.googleplayservices.analytics</extensionID>
-    <extensionID>com.marpies.ane.googleplayservices.location</extensionID>
-    <extensionID>com.marpies.ane.googleplayservices.base</extensionID>
-    <extensionID>com.marpies.ane.googleplayservices.basement</extensionID>
+    <extensionID>com.marpies.ane.onesignal</extensionID>
+    <extensionID>com.marpies.firebase.messaging</extensionID>
+    <extensionID>com.distriqt.Core</extensionID>
+    <extensionID>com.distriqt.androidsupport.V4</extensionID>
+    <extensionID>com.distriqt.Firebase</extensionID>
+    <extensionID>com.distriqt.playservices.Base</extensionID>
 </extensions>
 ```
 
@@ -66,7 +75,7 @@ For iOS support, look for the `iPhone` element and make sure it contains the fol
         </array>
 
         <key>MinimumOSVersion</key>
-        <string>7.0</string>
+        <string>8.0</string>
         ]]>
     </InfoAdditions>
 
@@ -194,6 +203,35 @@ For Android support, modify `manifestAdditions` element so that it contains the 
                 </receiver>
                 <!-- OneSignal END -->
 
+                <!-- Firebase BEGIN -->
+                <service android:name="com.google.firebase.components.ComponentDiscoveryService" >
+                    <meta-data
+                        android:name="com.google.firebase.components:com.google.firebase.analytics.connector.internal.AnalyticsConnectorRegistrar"
+                        android:value="com.google.firebase.components.ComponentRegistrar" />
+                    <meta-data
+                        android:name="com.google.firebase.components:com.google.firebase.iid.Registrar"
+                        android:value="com.google.firebase.components.ComponentRegistrar" />
+                </service>
+
+                <receiver
+                    android:name="com.google.firebase.iid.FirebaseInstanceIdReceiver"
+                    android:exported="true"
+                    android:permission="com.google.android.c2dm.permission.SEND" >
+                    <intent-filter>
+                        <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+                        <category android:name="{APP-PACKAGE-NAME}" />
+                    </intent-filter>
+                </receiver>
+
+                <service
+                    android:name="com.google.firebase.iid.FirebaseInstanceIdService"
+                    android:exported="true" >
+                    <intent-filter android:priority="-500" >
+                        <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
+                    </intent-filter>
+                </service>
+                <!-- Firebase END -->
+
             </application>
 
         </manifest>
@@ -205,7 +243,7 @@ For Android support, modify `manifestAdditions` element so that it contains the 
 In the snippet above, replace:
 * `{APP-PACKAGE-NAME}` with your app package name (value of `id` element in your AIR app descriptor). Remember it's prefixed with `air.` when packaged by AIR SDK, unless you knowingly prevent this.
 * `{ONE-SIGNAL-APP-ID}` with your OneSignal app id
-* `{GOOGLE-SENDER-ID}` with your Google Sender ID (also known as Google Project Number) obtained from [the tutorial](https://documentation.onesignal.com/docs/generate-a-google-server-api-key)
+* `{GOOGLE-SENDER-ID}` with your Google Sender ID (also known as Google Project Number or Firebase Sender ID) obtained from [the tutorial](https://documentation.onesignal.com/docs/generate-a-google-server-api-key)
 
 ### Custom Android icons
 
@@ -344,6 +382,11 @@ ANT build scripts are available in the [build](build/) directory. Edit [build.pr
 The ANE has been written by [Marcel Piestansky](https://twitter.com/marpies) and is distributed under [Apache License, version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html).
 
 ## Changelog
+
+#### November 22, 2018 (v1.5.0)
+
+* UPDATED OneSignal SDKs for both iOS (v2.9.3) and Android (v3.10.3)
+* ADDED Firebase Messaging support libraries
 
 #### June 19, 2018 (v1.4.1)
 

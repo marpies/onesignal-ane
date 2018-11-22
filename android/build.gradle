@@ -14,7 +14,7 @@ apply plugin: 'com.android.library'
 
 dependencies {
     compile files('libs/FlashRuntimeExtensions.jar')
-    compile files('libs/onesignal-3.9.1.jar')
+    compile files('libs/onesignal-3.10.3.jar')
     compile files('libs/android-support-v4.jar')
     compile 'com.google.android.gms:play-services-base:9.4.0'
     compile 'com.google.android.gms:play-services-basement:9.4.0'

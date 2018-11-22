@@ -40,7 +40,7 @@ First, add the extension's ID to the `extensions` element.
 
 If you are targeting Android, add the following dependency extensions:
 
-* `com.marpies.firebase.messaging` (see the [releases page](https://github.com/marpies/onesignal-ane/releases))
+* `com.marpies.ane.firebase.messaging` (see the [releases page](https://github.com/marpies/onesignal-ane/releases))
 * `com.distriqt.Core` (https://github.com/distriqt/ANE-Core)
 * `com.distriqt.androidsupport.V4` (https://github.com/distriqt/ANE-AndroidSupport)
 * `com.distriqt.playservices.Base` (https://github.com/distriqt/ANE-GooglePlayServices)
@@ -53,7 +53,7 @@ Your app descriptor should now contain the following:
 ```xml
 <extensions>
     <extensionID>com.marpies.ane.onesignal</extensionID>
-    <extensionID>com.marpies.firebase.messaging</extensionID>
+    <extensionID>com.marpies.ane.firebase.messaging</extensionID>
     <extensionID>com.distriqt.Core</extensionID>
     <extensionID>com.distriqt.androidsupport.V4</extensionID>
     <extensionID>com.distriqt.Firebase</extensionID>

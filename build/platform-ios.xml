@@ -1,6 +1,6 @@
 <platform xmlns="http://ns.adobe.com/air/extension/20.0">
     <linkerOptions>
-        <option>-ios_version_min 7.0</option>
+        <option>-ios_version_min 8.0</option>
         <option>-framework SystemConfiguration</option>
         <option>-weak_framework UserNotifications</option>
     </linkerOptions>

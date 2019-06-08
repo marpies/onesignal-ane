@@ -22,6 +22,8 @@
 static const NSString* OS_TOKEN_RECEIVED = @"tokenReceived";
 static const NSString* OS_NOTIFICATION_RECEIVED = @"notificationReceived";
 static const NSString* OS_TAGS_RECEIVED = @"tagsReceived";
+static const NSString* OS_SEND_TAGS_RESPONSE = @"sendTagsResponse";
+static const NSString* OS_DELETE_TAGS_RESPONSE = @"deleteTagsResponse";
 static const NSString* POST_NOTIFICATION_SUCCESS = @"postNotificationSuccess";
 static const NSString* POST_NOTIFICATION_ERROR = @"postNotificationError";
 

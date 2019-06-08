@@ -34,6 +34,8 @@ package com.marpies.ane.onesignal {
         private static const TOKEN_RECEIVED:String = "tokenReceived";
         private static const NOTIFICATION_RECEIVED:String = "notificationReceived";
         private static const TAGS_RECEIVED:String = "tagsReceived";
+        private static const SEND_TAGS_RESPONSE:String = "sendTagsResponse";
+        private static const DELETE_TAGS_RESPONSE:String = "deleteTagsResponse";
         private static const POST_NOTIFICATION_SUCCESS:String = "postNotificationSuccess";
         private static const POST_NOTIFICATION_ERROR:String = "postNotificationError";
 
@@ -146,13 +148,14 @@ package com.marpies.ane.onesignal {
          *
          * @param key Key of your choosing to create or update.
          * @param value Value to set on the key. Empty <code>String</code> removes the key.
+         * @param callback Function to be called when the operation completes.
          *
          * @see #sendTags()
          * @see #getTags()
          * @see #deleteTag()
          * @see #deleteTags()
          */
-        public static function sendTag( key:String, value:String ):void {
+        public static function sendTag( key:String, value:String, callback:Function = null ):void {
             if( !isSupported ) return;
             validateExtensionContext();
 
@@ -161,7 +164,7 @@ package com.marpies.ane.onesignal {
 
             var tag:Object = {};
             tag[key] = value;
-            sendTags( tag );
+            sendTags( tag, callback );
         }
 
         /**
@@ -180,19 +183,20 @@ package com.marpies.ane.onesignal {
          *    area: "desert"
          * } );
          * </listing>
+         * @param callback Function to be called when the operation completes.
          *
          * @see #sendTag()
          * @see #getTags()
          * @see #deleteTag()
          * @see #deleteTags()
          */
-        public static function sendTags( tags:Object ):void {
+        public static function sendTags( tags:Object, callback:Function = null ):void {
             if( !isSupported ) return;
             validateExtensionContext();
 
             if( tags === null ) throw new ArgumentError( "Parameter tags cannot be null." );
 
-            mContext.call( "sendTags", getVectorFromObject( tags ) );
+            mContext.call( "sendTags", getVectorFromObject( tags ), registerCallback( callback ) );
         }
 
         /**
@@ -229,18 +233,20 @@ package com.marpies.ane.onesignal {
          * <p>Extension must be initialized using <code>OneSignal.init()</code> before calling this method.</p>
          *
          * @param key Key to delete.
+         * @param callback Function to be called when the operation completes.
          *
          * @see #sendTag()
          * @see #sendTags()
          * @see #getTags()
          * @see #deleteTags()
          */
-        public static function deleteTag( key:String ):void {
+        public static function deleteTag( key:String, callback:Function = null ):void {
             if( !isSupported ) return;
             validateExtensionContext();
 
             if( key === null ) throw new ArgumentError( "Parameter key cannot be null." );
-            deleteTags( new <String>[key] );
+
+            deleteTags( new <String>[key], callback );
         }
 
         /**
@@ -251,19 +257,20 @@ package com.marpies.ane.onesignal {
          * <p>Extension must be initialized using <code>OneSignal.init()</code> before calling this method.</p>
          *
          * @param keys List of keys to delete.
+         * @param callback Function to be called when the operation completes.
          *
          * @see #sendTag()
          * @see #sendTags()
          * @see #getTags()
          * @see #deleteTag()
          */
-        public static function deleteTags( keys:Vector.<String> ):void {
+        public static function deleteTags( keys:Vector.<String>, callback:Function = null ):void {
             if( !isSupported ) return;
             validateExtensionContext();
 
             if( keys === null ) throw new ArgumentError( "Parameter keys cannot be null." );
 
-            mContext.call( "deleteTags", keys );
+            mContext.call( "deleteTags", keys, registerCallback( callback ) );
         }
 
         /**
@@ -550,6 +557,20 @@ package com.marpies.ane.onesignal {
                     if( callback !== null ) {
                         var tags:Object = getJSON( responseJSON.tags );
                         callback( tags );
+                    }
+                    return;
+                case SEND_TAGS_RESPONSE:
+                    callback = getCallback( int( event.level ) );
+                    unregisterCallback( int(event.level) );
+                    if( callback !== null ) {
+                        callback();
+                    }
+                    return;
+                case DELETE_TAGS_RESPONSE:
+                    callback = getCallback( int( event.level ) );
+                    unregisterCallback( int(event.level) );
+                    if( callback !== null ) {
+                        callback();
                     }
                     return;
                 case POST_NOTIFICATION_SUCCESS:

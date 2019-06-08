@@ -19,6 +19,7 @@ package com.marpies.ane.onesignal.functions;
 import com.adobe.fre.FREArray;
 import com.adobe.fre.FREContext;
 import com.adobe.fre.FREObject;
+import com.marpies.ane.onesignal.data.OneSignalEvent;
 import com.marpies.ane.onesignal.utils.AIR;
 import com.marpies.ane.onesignal.utils.FREObjectUtils;
 import com.onesignal.OneSignal;
@@ -27,13 +28,17 @@ import org.json.JSONObject;
 
 import java.util.List;
 
-public class SendTagsFunction extends BaseFunction {
+public class SendTagsFunction extends BaseFunction implements OneSignal.ChangeTagsUpdateHandler
+{
+    private int mCallbackId = -1;
 
 	@Override
 	public FREObject call( FREContext context, FREObject[] args ) {
 		super.call( context, args );
 
 		List<String> tagList = FREObjectUtils.getListOfString( (FREArray) args[0] );
+        mCallbackId = FREObjectUtils.getInt( args[1] );
+
 		JSONObject tags = new JSONObject();
 		for( int i = 0; i < tagList.size(); ) {
 			String key = tagList.get( i++ );
@@ -45,10 +50,28 @@ public class SendTagsFunction extends BaseFunction {
 			}
 		}
 		AIR.log( "OneSignal::sendTags" );
-		OneSignal.sendTags( tags );
+		OneSignal.sendTags( tags, this );
 
 		return null;
 	}
 
+    @Override
+    public void onSuccess(JSONObject jsonObject) {
+        AIR.log( "OneSignal::sendTags success" );
+
+        if( mCallbackId >= 0 ) {
+            AIR.dispatchEvent( OneSignalEvent.SEND_TAGS_RESPONSE, String.valueOf(mCallbackId) );
+            mCallbackId = -1;
+        }
+    }
+
+    @Override
+    public void onFailure(OneSignal.SendTagsError sendTagsError) {
+        AIR.log( "OneSignal::sendTags error" );
+        if( mCallbackId >= 0 ) {
+            AIR.dispatchEvent( OneSignalEvent.SEND_TAGS_RESPONSE, String.valueOf(mCallbackId) );
+            mCallbackId = -1;
+        }
+    }
 }
 

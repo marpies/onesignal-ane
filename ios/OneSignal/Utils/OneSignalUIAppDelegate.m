@@ -112,12 +112,28 @@ static NSString* const kPushOSDefaultsSubscriptionKey = @"pushos_subscription";
     return YES;
 }
 
-- (void) sendTags:(NSDictionary*) tags {
-    [OneSignal sendTags: tags];
+- (void) sendTags:(NSDictionary*) tags callbackID:(int) callbackID {
+    if(callbackID >= 0) {
+        [OneSignal sendTags: tags onSuccess:^(NSDictionary *result) {
+            [AIROneSignal dispatchEvent:OS_SEND_TAGS_RESPONSE withMessage:[NSString stringWithFormat:@"%i", callbackID]];
+        } onFailure:^(NSError *error) {
+            [AIROneSignal dispatchEvent:OS_SEND_TAGS_RESPONSE withMessage:[NSString stringWithFormat:@"%i", callbackID]];
+        }];
+    } else {
+        [OneSignal sendTags: tags];
+    }
 }
 
-- (void) deleteTags:(NSArray*) tags {
-    [OneSignal deleteTags: tags];
+- (void) deleteTags:(NSArray*) tags callbackID:(int) callbackID {
+    if(callbackID >= 0) {
+        [OneSignal deleteTags: tags onSuccess:^(NSDictionary *result) {
+            [AIROneSignal dispatchEvent:OS_DELETE_TAGS_RESPONSE withMessage:[NSString stringWithFormat:@"%i", callbackID]];
+        } onFailure:^(NSError *error) {
+            [AIROneSignal dispatchEvent:OS_DELETE_TAGS_RESPONSE withMessage:[NSString stringWithFormat:@"%i", callbackID]];
+        }];
+    } else {
+        [OneSignal deleteTags: tags];
+    }
 }
 
 - (void) getTags:(int) callbackID {

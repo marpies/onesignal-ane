@@ -21,12 +21,13 @@
 FREObject pushos_sendTags( FREContext context, void* functionData, uint32_t argc, FREObject argv[] ) {
     [AIROneSignal log:@"pushos_sendTags"];
     NSArray* tagList = [MPFREObjectUtils getNSArray:argv[0]];
+    int callbackID = [MPFREObjectUtils getInt:argv[1]];
     NSMutableDictionary* tags = [NSMutableDictionary dictionary];
     unsigned long numTags = tagList.count;
     for( int i = 0; i < numTags; ) {
         id key = [tagList objectAtIndex:i++];
         tags[key] = [tagList objectAtIndex:i++];
     }
-    [[[AIROneSignal sharedInstance] appDelegate] sendTags:tags];
+    [[[AIROneSignal sharedInstance] appDelegate] sendTags:tags callbackID: callbackID];
     return nil;
 }

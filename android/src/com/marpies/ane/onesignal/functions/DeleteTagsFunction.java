@@ -19,25 +19,49 @@ package com.marpies.ane.onesignal.functions;
 import com.adobe.fre.FREArray;
 import com.adobe.fre.FREContext;
 import com.adobe.fre.FREObject;
+import com.marpies.ane.onesignal.data.OneSignalEvent;
 import com.marpies.ane.onesignal.utils.AIR;
 import com.marpies.ane.onesignal.utils.FREObjectUtils;
 import com.onesignal.OneSignal;
+import com.onesignal.OneSignal.ChangeTagsUpdateHandler;
+import org.json.JSONObject;
 
 import java.util.List;
 
-public class DeleteTagsFunction extends BaseFunction {
+public class DeleteTagsFunction extends BaseFunction implements ChangeTagsUpdateHandler
+{
+    private int mCallbackId = -1;
 
 	@Override
 	public FREObject call( FREContext context, FREObject[] args ) {
 		super.call( context, args );
 
 		List<String> tagList = FREObjectUtils.getListOfString( (FREArray) args[0] );
+        mCallbackId = FREObjectUtils.getInt( args[1] );
 
 		AIR.log( "OneSignal::deleteTags" );
-		OneSignal.deleteTags( tagList );
+        OneSignal.deleteTags( tagList, this );
 
 		return null;
 	}
 
+    @Override
+    public void onSuccess(JSONObject jsonObject) {
+        AIR.log( "OneSignal::deleteTags success" );
+
+        if( mCallbackId >= 0 ) {
+            AIR.dispatchEvent( OneSignalEvent.DELETE_TAGS_RESPONSE, String.valueOf(mCallbackId) );
+            mCallbackId = -1;
+        }
+    }
+
+    @Override
+    public void onFailure(OneSignal.SendTagsError sendTagsError) {
+        AIR.log( "OneSignal::deleteTags error" );
+        if( mCallbackId >= 0 ) {
+            AIR.dispatchEvent( OneSignalEvent.DELETE_TAGS_RESPONSE, String.valueOf(mCallbackId) );
+            mCallbackId = -1;
+        }
+    }
 }
 

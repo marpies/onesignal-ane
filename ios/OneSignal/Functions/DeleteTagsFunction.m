@@ -21,6 +21,7 @@
 FREObject pushos_deleteTags( FREContext context, void* functionData, uint32_t argc, FREObject argv[] ) {
     [AIROneSignal log:@"pushos_deleteTags"];
     NSArray* tagList = [MPFREObjectUtils getNSArray:argv[0]];
-    [[[AIROneSignal sharedInstance] appDelegate] deleteTags:tagList];
+    int callbackID = [MPFREObjectUtils getInt:argv[1]];
+    [[[AIROneSignal sharedInstance] appDelegate] deleteTags:tagList callbackID: callbackID];
     return nil;
 }

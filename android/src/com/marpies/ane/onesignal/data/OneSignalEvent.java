@@ -21,6 +21,8 @@ public class OneSignalEvent {
 	public static final String TOKEN_RECEIVED = "tokenReceived";
 	public static final String NOTIFICATION_RECEIVED = "notificationReceived";
 	public static final String TAGS_RECEIVED = "tagsReceived";
+    public static final String SEND_TAGS_RESPONSE = "sendTagsResponse";
+	public static final String DELETE_TAGS_RESPONSE = "deleteTagsResponse";
 	public static final String POST_NOTIFICATION_SUCCESS = "postNotificationSuccess";
 	public static final String POST_NOTIFICATION_ERROR = "postNotificationError";
 

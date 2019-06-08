@@ -22,8 +22,8 @@
 - (void) registerForPushNotifications;
 - (void) setSubscription:(BOOL) subscription;
 - (BOOL) getSubscription;
-- (void) sendTags:(nullable NSDictionary*) tags;
-- (void) deleteTags:(nullable NSArray*) tags;
+- (void) sendTags:(nullable NSDictionary*) tags callbackID:(int) callbackID;
+- (void) deleteTags:(nullable NSArray*) tags callbackID:(int) callbackID;
 - (void) getTags:(int) callbackID;
 - (void) postNotification:(nullable NSDictionary*) parameters callbackID:(int) callbackID;
 - (void) idsAvailable;

@@ -340,22 +340,30 @@ By using tags you can segment your user base and create personalized notificatio
 
 ```as3
 // key - value
-OneSignal.sendTag( "profession", "warrior" );
+OneSignal.sendTag( "profession", "warrior", function():void {
+    trace("Send tag completed");
+} );
 
 // Or multiple tags at a time
 OneSignal.sendTags( {
     "profession": "warrior",
     "area": "desert"
+}, function():void {
+    trace("Send tags completed");
 } );
 ```
 
 Use one of the following methods to delete previously set tags:
 
 ```as3
-OneSignal.deleteTag( "profession" );
+OneSignal.deleteTag( "profession", function():void {
+    trace("Delete tag completed");
+} );
 
 // Or multiple tags at a time
-OneSignal.deleteTags( new <String>["profession", "area"] );
+OneSignal.deleteTags( new <String>["profession", "area"], function():void {
+    trace("Delete tags completed");
+} );
 ```
 
 Use the following method to retrieve the values current user has been tagged with:
@@ -382,6 +390,12 @@ ANT build scripts are available in the [build](build/) directory. Edit [build.pr
 The ANE has been written by [Marcel Piestansky](https://twitter.com/marpies) and is distributed under [Apache License, version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html).
 
 ## Changelog
+
+#### June 8, 2019 (v1.6.0)
+
+* ADDED callback to "tags" APIs
+* UPDATED "are notifications enabled" API usage (iOS)
+* UPDATED iOS min version to 8.0
 
 #### November 22, 2018 (v1.5.0)
 

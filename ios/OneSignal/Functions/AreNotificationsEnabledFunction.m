@@ -21,16 +21,10 @@
 
 FREObject pushos_notificationsEnabled( FREContext context, void* functionData, uint32_t argc, FREObject argv[] ) {
     [AIROneSignal log:@"pushos_notificationsEnabled"];
-    /* iOS 8+ */
-    if( [[UIApplication sharedApplication] respondsToSelector:@selector(isRegisteredForRemoteNotifications)] ) {
-        UIUserNotificationType types = [[UIApplication sharedApplication] currentUserNotificationSettings].types;
-        BOOL subscription = [[[AIROneSignal sharedInstance] appDelegate] getSubscription];
-        BOOL atLeastBanners = types & UIRemoteNotificationTypeAlert; // Ignore sound or app badge settings
-        BOOL result = subscription && atLeastBanners && [[UIApplication sharedApplication] isRegisteredForRemoteNotifications];
-        return [MPFREObjectUtils getFREObjectFromBOOL:result];
-    } else {
-        UIRemoteNotificationType types = [[UIApplication sharedApplication] enabledRemoteNotificationTypes];
-        return [MPFREObjectUtils getFREObjectFromBOOL:types != UIRemoteNotificationTypeNone];
-    }
-    return nil;
+    
+    UIUserNotificationType types = [[UIApplication sharedApplication] currentUserNotificationSettings].types;
+    BOOL subscription = [[[AIROneSignal sharedInstance] appDelegate] getSubscription];
+    BOOL atLeastBanners = types & UIRemoteNotificationTypeAlert; // Ignore sound or app badge settings
+    BOOL result = subscription && atLeastBanners && [[UIApplication sharedApplication] isRegisteredForRemoteNotifications];
+    return [MPFREObjectUtils getFREObjectFromBOOL:result];
 }

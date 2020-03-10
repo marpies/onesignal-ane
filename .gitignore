@@ -25,3 +25,4 @@ android/com.onesignal.sounds-res
 ios/OneSignal.xcodeproj/project.xcworkspace/xcuserdata/marpies.xcuserdatad
 android/$buildDir
 ios/OneSignal.xcodeproj/xcuserdata/marpies.xcuserdatad
+*.DS_Store

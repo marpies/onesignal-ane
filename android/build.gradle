@@ -3,9 +3,11 @@
 buildscript {
     repositories {
         mavenCentral()
+        google()
+        jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.1.+'
+        classpath 'com.android.tools.build:gradle:3.6.0'
     }
 }
 
@@ -14,19 +16,25 @@ apply plugin: 'com.android.library'
 
 dependencies {
     compile files('libs/FlashRuntimeExtensions.jar')
-    compile files('libs/onesignal-3.10.3.jar')
+    compile files('libs/onesignal-3.12.6.jar')
     compile files('libs/android-support-v4.jar')
     compile 'com.google.android.gms:play-services-base:9.4.0'
     compile 'com.google.android.gms:play-services-basement:9.4.0'
 }
 
+repositories {
+    maven { url 'https://plugins.gradle.org/m2/'}
+    maven { url 'https://maven.google.com' }
+    google()
+}
+
 android {
     defaultConfig {
         minSdkVersion 14
-        targetSdkVersion 23
+        targetSdkVersion 28
     }
-    compileSdkVersion 23
-    buildToolsVersion "23.0.3"
+    compileSdkVersion 28
+    buildToolsVersion "28.0.3"
     
     lintOptions {
         abortOnError false

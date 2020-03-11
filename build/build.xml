@@ -82,7 +82,7 @@
             <fileset dir="temp/android/aar/res/"/>
         </copy>
         <!-- Copy OneSignal jar -->
-        <copy file="../android/libs/onesignal-3.10.3.jar" tofile="temp/android/onesignal-3.10.3.jar" overwrite="true" />
+        <copy file="../android/libs/onesignal-3.12.6.jar" tofile="temp/android/onesignal-3.12.6.jar" overwrite="true" />
         <!-- clean up -->
         <delete dir="temp/android/aar" />
         <delete dir="../android/build" />

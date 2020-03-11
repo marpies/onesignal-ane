@@ -1,7 +1,7 @@
 <platform xmlns="http://ns.adobe.com/air/extension/20.0">
 
 	<packagedDependencies>
-        <packagedDependency>onesignal-3.10.3.jar</packagedDependency>
+        <packagedDependency>onesignal-3.12.6.jar</packagedDependency>
     </packagedDependencies> 
 
     <packagedResources>

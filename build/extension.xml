@@ -18,6 +18,14 @@
         </applicationDeployment>
     </platform>
 
+    <platform name="Android-ARM64">
+        <applicationDeployment>
+            <nativeLibrary>libOneSignal.jar</nativeLibrary>
+            <initializer>com.marpies.ane.onesignal.OneSignalExtension</initializer>
+            <finalizer>com.marpies.ane.onesignal.OneSignalExtension</finalizer>
+        </applicationDeployment>
+    </platform>
+
     <platform name="Android-x86">
         <applicationDeployment>
             <nativeLibrary>libOneSignal.jar</nativeLibrary>

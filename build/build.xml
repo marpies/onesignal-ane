@@ -30,6 +30,7 @@
             <arg line="-sdk ${ios.sdkversion}"/>
             <arg line="-alltargets"/>
             <arg line="-configuration Release"/>
+            <arg line="-quiet"/>
             <arg line="SYMROOT=../build/temp/ios/build/"/>
         </exec>
 

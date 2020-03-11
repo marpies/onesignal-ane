@@ -5,7 +5,12 @@
     <property file="build.properties"/>
 
     <!-- All -->
-    <target name="all" depends="swc,ios,android,package" description="Full build of extension"/>
+    <target name="all" depends="clean,swc,ios,android,package" description="Full build of extension"/>
+
+    <!-- CLEAN -->
+    <target name="clean" description="Clean temp build dir">
+        <delete dir="temp/"/>
+    </target>
 
     <!--
 

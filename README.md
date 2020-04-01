@@ -69,7 +69,6 @@ Your app descriptor should now contain the following:
     <extensionID>com.marpies.ane.firebase.messaging</extensionID>
     <extensionID>com.distriqt.Core</extensionID>
     <extensionID>com.distriqt.androidsupport.V4</extensionID>
-    <extensionID>com.distriqt.Firebase</extensionID>
     <extensionID>com.distriqt.playservices.Base</extensionID>
 </extensions>
 ```

@@ -13,12 +13,12 @@ Development of this extension is supported by [Family Train Inc.](https://github
 
 ## Native SDK versions
 
-* iOS `v2.12.6` (Feb 1, 2020)
-* Android `v3.12.6` (Feb 1, 2020)
+* iOS `v2.15.4` (Oct 20, 2020)
+* Android `v3.15.4` (Oct 20, 2020)
 
 ## Requirements
 
-* iOS 8+
+* iOS 10+
 * Android 4+
 * Adobe AIR 29+
 
@@ -40,7 +40,7 @@ First, add the extension's ID to the `extensions` element.
 
 On iOS, you may need to add the following ANE to correctly register with Apple push servers:
 
-* `com.distriqt.Core` (https://github.com/distriqt/ANE-Core)
+* [com.distriqt.Core](https://github.com/distriqt/ANE-Core)
 
 At the beginning of your code, call the `init` method of the `Core` extension:
 
@@ -54,22 +54,33 @@ Core.init();
 
 If you are targeting Android, add the following dependency extensions:
 
-* `com.marpies.ane.firebase.base` (see the [releases page](https://github.com/marpies/onesignal-ane/releases))
-* `com.marpies.ane.firebase.messaging` (see the [releases page](https://github.com/marpies/onesignal-ane/releases))
-* `com.distriqt.androidsupport.V4` (https://github.com/distriqt/ANE-AndroidSupport)
-* `com.distriqt.playservices.Base` (https://github.com/distriqt/ANE-GooglePlayServices)
+* [com.google.firebase.firebase-analytics-ktx](https://github.com/tuarua/Android-ANE-Dependencies/tree/master/anes/firebase)
+* [com.google.firebase.firebase-components](https://github.com/tuarua/Android-ANE-Dependencies/tree/master/anes/firebase)
+* [com.google.firebase.firebase-iid](https://github.com/tuarua/Android-ANE-Dependencies/tree/master/anes/firebase)
+* [com.google.firebase.firebase-messaging](https://github.com/tuarua/Android-ANE-Dependencies/tree/master/anes/firebase)
+* [com.tuarua.frekotlin](https://github.com/tuarua/Android-ANE-Dependencies/blob/master/anes/kotlin)
+* [androidx.core](https://github.com/distriqt/ANE-AndroidSupport)
+* [com.distriqt.playservices.Base](https://github.com/distriqt/ANE-GooglePlayServices)
+* [com.distriqt.playservices.AdsIdentifier](https://github.com/distriqt/ANE-GooglePlayServices)
 
-> Credits to [Distriqt](https://github.com/distriqt) for providing these and other high quality extensions.
+> Credits to [Distriqt](https://github.com/distriqt) and [tuarua](https://github.com/tuarua) for providing these extensions.
 
 Your app descriptor should now contain the following:
 
 ```xml
 <extensions>
     <extensionID>com.marpies.ane.onesignal</extensionID>
-    <extensionID>com.marpies.ane.firebase.messaging</extensionID>
+    
+    <extensionID>com.google.firebase.firebase-analytics-ktx</extensionID>
+    <extensionID>com.google.firebase.firebase-components</extensionID>
+    <extensionID>com.google.firebase.firebase-iid</extensionID>
+    <extensionID>com.google.firebase.firebase-messaging</extensionID>
+    <extensionID>com.tuarua.frekotlin</extensionID>
+
+    <extensionID>androidx.core</extensionID>
     <extensionID>com.distriqt.Core</extensionID>
-    <extensionID>com.distriqt.androidsupport.V4</extensionID>
     <extensionID>com.distriqt.playservices.Base</extensionID>
+    <extensionID>com.distriqt.playservices.AdsIdentifier</extensionID>
 </extensions>
 ```
 
@@ -87,7 +98,7 @@ For iOS support, look for the `iPhone` element and make sure it contains the fol
         </array>
 
         <key>MinimumOSVersion</key>
-        <string>8.0</string>
+        <string>10.0</string>
         ]]>
     </InfoAdditions>
 
@@ -110,100 +121,155 @@ For Android support, modify `manifestAdditions` element so that it contains the 
     <manifestAdditions>
         <![CDATA[
         <manifest android:installLocation="auto">
-            <!-- OneSignal permissions -->
-            <permission android:name="{APP-PACKAGE-NAME}.permission.C2D_MESSAGE"
-                        android:protectionLevel="signature" />
-            <uses-permission android:name="{APP-PACKAGE-NAME}.permission.C2D_MESSAGE" />
+            <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="28" />
+
             <uses-permission android:name="android.permission.INTERNET" />
-            <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
-            <uses-permission android:name="android.permission.WAKE_LOCK" />
-            <uses-permission android:name="android.permission.VIBRATE" />
             <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+            <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+            <!-- Required by older versions of Google Play services to create IID tokens -->
+            <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
+            <uses-permission android:name="com.google.android.finsky.permission.BIND_GET_INSTALL_REFERRER_SERVICE" />
+
+            <!-- Create a unique permission for your app and use it so only your app can receive your OneSignal messages. -->
+            <permission android:name="{APP-PACKAGE-NAME}.permission.C2D_MESSAGE" android:protectionLevel="signature" />
+            <uses-permission android:name="{APP-PACKAGE-NAME}.permission.C2D_MESSAGE" />
+
+            <!--
+            Required so the device vibrates on receiving a push notification.
+                    Vibration settings of the device still apply.
+                -->
+            <uses-permission android:name="android.permission.VIBRATE" />
+
+            <!--
+            Use to restore notifications the user hasn't interacted with.
+                    They could be missed notifications if the user reboots their device if this isn't in place.
+                -->
             <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-
-            <!-- START: ShortcutBadger -->
-
+            
             <!-- Samsung -->
-            <uses-permission android:name="com.sec.android.provider.badge.permission.READ"/>
-            <uses-permission android:name="com.sec.android.provider.badge.permission.WRITE"/>
-
+            <uses-permission android:name="com.sec.android.provider.badge.permission.READ" />
+            <uses-permission android:name="com.sec.android.provider.badge.permission.WRITE" />
             <!-- HTC -->
-            <uses-permission android:name="com.htc.launcher.permission.READ_SETTINGS"/>
-            <uses-permission android:name="com.htc.launcher.permission.UPDATE_SHORTCUT"/>
-
+            <uses-permission android:name="com.htc.launcher.permission.READ_SETTINGS" />
+            <uses-permission android:name="com.htc.launcher.permission.UPDATE_SHORTCUT" />
             <!-- Sony -->
-            <uses-permission android:name="com.sonyericsson.home.permission.BROADCAST_BADGE"/>
-            <uses-permission android:name="com.sonymobile.home.permission.PROVIDER_INSERT_BADGE"/>
-
+            <uses-permission android:name="com.sonyericsson.home.permission.BROADCAST_BADGE" />
+            <uses-permission android:name="com.sonymobile.home.permission.PROVIDER_INSERT_BADGE" />
             <!-- Apex -->
-            <uses-permission android:name="com.anddoes.launcher.permission.UPDATE_COUNT"/>
-
+            <uses-permission android:name="com.anddoes.launcher.permission.UPDATE_COUNT" />
             <!-- Solid -->
-            <uses-permission android:name="com.majeur.launcher.permission.UPDATE_BADGE"/>
-
+            <uses-permission android:name="com.majeur.launcher.permission.UPDATE_BADGE" />
             <!-- Huawei -->
             <uses-permission android:name="com.huawei.android.launcher.permission.CHANGE_BADGE" />
             <uses-permission android:name="com.huawei.android.launcher.permission.READ_SETTINGS" />
             <uses-permission android:name="com.huawei.android.launcher.permission.WRITE_SETTINGS" />
-
             <!-- ZUK -->
-            <uses-permission android:name="android.permission.READ_APP_BADGE"/>
-
+            <uses-permission android:name="android.permission.READ_APP_BADGE" />
             <!-- OPPO -->
-            <uses-permission android:name="com.oppo.launcher.permission.READ_SETTINGS"/>
-            <uses-permission android:name="com.oppo.launcher.permission.WRITE_SETTINGS"/>
-
+            <uses-permission android:name="com.oppo.launcher.permission.READ_SETTINGS" />
+            <uses-permission android:name="com.oppo.launcher.permission.WRITE_SETTINGS" />
             <!-- EvMe -->
-            <uses-permission android:name="me.everything.badger.permission.BADGE_COUNT_READ"/>
-            <uses-permission android:name="me.everything.badger.permission.BADGE_COUNT_WRITE"/>
+            <uses-permission android:name="me.everything.badger.permission.BADGE_COUNT_READ" />
+            <uses-permission android:name="me.everything.badger.permission.BADGE_COUNT_WRITE" />
 
-            <!-- End: ShortcutBadger -->
-
-            <application>
-
-                <meta-data android:name="com.google.android.gms.version"
-                            android:value="@integer/google_play_services_version" />
-
-                <!-- OneSignal BEGIN -->
-                <meta-data android:name="onesignal_app_id"
-                            android:value="{ONE-SIGNAL-APP-ID}" />
-                <meta-data android:name="onesignal_google_project_number"
-                            android:value="str:{GOOGLE-SENDER-ID}" />
-
-                <receiver android:name="com.onesignal.NotificationOpenedReceiver" />
-                <service android:name="com.onesignal.GcmIntentService" />
-
-                <!-- For Android O -->
-                <service android:name="com.onesignal.GcmIntentJobService"
-                        android:permission="android.permission.BIND_JOB_SERVICE" />
-
-                <service android:name="com.onesignal.SyncJobService"
-                        android:permission="android.permission.BIND_JOB_SERVICE" />
-
-                <service android:name="com.onesignal.RestoreJobService"
-                    android:permission="android.permission.BIND_JOB_SERVICE" />
-
-                <service android:name="com.onesignal.RestoreKickoffJobService"
-                    android:permission="android.permission.BIND_JOB_SERVICE" />
-                <!-- END - For Android O -->
-
-                <service android:name="com.onesignal.SyncService" />
-                <activity android:name="com.onesignal.PermissionsActivity"
-                        android:theme="@android:style/Theme.Translucent.NoTitleBar" />
-
-                <service android:name="com.onesignal.NotificationRestoreService" />
-
-                <receiver android:name="com.onesignal.GcmBroadcastReceiver"
-                            android:permission="com.google.android.c2dm.permission.SEND" >
+            <application android:appComponentFactory="androidx.core.app.CoreComponentFactory" android:enabled="true">
+                <meta-data android:name="android.max_aspect" android:value="2.1" />
+                <activity android:excludeFromRecents="false" android:hardwareAccelerated="true">
+                    <intent-filter>
+                        <action android:name="android.intent.action.MAIN" />
+                        <category android:name="android.intent.category.LAUNCHER" />
+                    </intent-filter>
+                </activity>
+                <service android:name="com.google.firebase.components.ComponentDiscoveryService" android:directBootAware="true"
+                    android:exported="false">
+                    <meta-data android:name="com.google.firebase.components:com.google.firebase.iid.Registrar"
+                        android:value="com.google.firebase.components.ComponentRegistrar" />
+                    <meta-data
+                        android:name="com.google.firebase.components:com.google.firebase.analytics.connector.internal.AnalyticsConnectorRegistrar"
+                        android:value="com.google.firebase.components.ComponentRegistrar" />
+                    <meta-data
+                        android:name="com.google.firebase.components:com.google.firebase.analytics.ktx.FirebaseAnalyticsKtxRegistrar"
+                        android:value="com.google.firebase.components.ComponentRegistrar" />
+                    <meta-data android:name="com.google.firebase.components:com.google.firebase.ktx.FirebaseCommonKtxRegistrar"
+                        android:value="com.google.firebase.components.ComponentRegistrar" />
+                    <meta-data
+                        android:name="com.google.firebase.components:com.google.firebase.datatransport.TransportRegistrar"
+                        android:value="com.google.firebase.components.ComponentRegistrar" />
+                    <meta-data
+                        android:name="com.google.firebase.components:com.google.firebase.installations.FirebaseInstallationsRegistrar"
+                        android:value="com.google.firebase.components.ComponentRegistrar" />
+                    <meta-data
+                        android:name="com.google.firebase.components:com.google.firebase.messaging.FirebaseMessagingRegistrar"
+                        android:value="com.google.firebase.components.ComponentRegistrar" />
+                </service>
+                <receiver android:name="com.google.firebase.iid.FirebaseInstanceIdReceiver" android:exported="true"
+                    android:permission="com.google.android.c2dm.permission.SEND">
                     <intent-filter>
                         <action android:name="com.google.android.c2dm.intent.RECEIVE" />
                         <category android:name="{APP-PACKAGE-NAME}" />
                     </intent-filter>
                 </receiver>
+                <receiver android:name="com.google.android.gms.measurement.AppMeasurementReceiver" android:enabled="true"
+                    android:exported="false"></receiver>
+                <service android:name="com.google.android.gms.measurement.AppMeasurementService" android:enabled="true"
+                    android:exported="false" />
+                <service android:name="com.google.android.gms.measurement.AppMeasurementJobService" android:enabled="true"
+                    android:exported="false" android:permission="android.permission.BIND_JOB_SERVICE" />
+                <activity android:name="com.google.android.gms.common.api.GoogleApiActivity" android:exported="false"
+                    android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+                <meta-data android:name="com.google.android.gms.version"
+                    android:value="@integer/google_play_services_version" />
+                <provider android:name="com.google.firebase.provider.FirebaseInitProvider"
+                    android:authorities="{APP-PACKAGE-NAME}.firebaseinitprovider" android:directBootAware="true"
+                    android:exported="false" android:initOrder="100" />
+                <service android:name="com.google.android.datatransport.runtime.backends.TransportBackendDiscovery"
+                    android:exported="false">
+                    <meta-data android:name="backend:com.google.android.datatransport.cct.CctBackendFactory"
+                        android:value="cct" />
+                </service>
+                <service
+                    android:name="com.google.android.datatransport.runtime.scheduling.jobscheduling.JobInfoSchedulerService"
+                    android:exported="false" android:permission="android.permission.BIND_JOB_SERVICE"></service>
+                <receiver
+                    android:name="com.google.android.datatransport.runtime.scheduling.jobscheduling.AlarmManagerSchedulerBroadcastReceiver"
+                    android:exported="false" />
+                <!--
+                        FirebaseMessagingService performs security checks at runtime,
+                        but set to not exported to explicitly avoid allowing another app to call it.
+                    -->
+                <service android:name="com.google.firebase.messaging.FirebaseMessagingService" android:directBootAware="true"
+                    android:exported="false">
+                    <intent-filter android:priority="-500">
+                        <action android:name="com.google.firebase.MESSAGING_EVENT" />
+                    </intent-filter>
+                </service>
 
+                <meta-data android:name="onesignal_app_id" android:value="{ONE-SIGNAL-APP-ID}" />
+
+                <receiver android:name="com.onesignal.GcmBroadcastReceiver"
+                    android:permission="com.google.android.c2dm.permission.SEND">
+                    <!-- High priority so OneSignal payloads can be filtered from other GCM receivers if filterOtherGCMReceivers is enabled. -->
+                    <intent-filter android:priority="999">
+                        <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+                        <category android:name="{APP-PACKAGE-NAME}" />
+                    </intent-filter>
+                </receiver>
+                <receiver android:name="com.onesignal.NotificationOpenedReceiver" />
+                <service android:name="com.onesignal.GcmIntentService" />
+                <service android:name="com.onesignal.GcmIntentJobService"
+                    android:permission="android.permission.BIND_JOB_SERVICE" />
+                <service android:name="com.onesignal.RestoreJobService"
+                    android:permission="android.permission.BIND_JOB_SERVICE" />
+                <service android:name="com.onesignal.RestoreKickoffJobService"
+                    android:permission="android.permission.BIND_JOB_SERVICE" />
+                <service android:name="com.onesignal.SyncService" android:stopWithTask="true" />
+                <service android:name="com.onesignal.SyncJobService" android:permission="android.permission.BIND_JOB_SERVICE" />
+                <activity android:name="com.onesignal.PermissionsActivity"
+                    android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+                <service android:name="com.onesignal.NotificationRestoreService" />
                 <receiver android:name="com.onesignal.BootUpReceiver">
                     <intent-filter>
-                        <action android:name="android.intent.action.ACTION_BOOT_COMPLETED" />
                         <action android:name="android.intent.action.BOOT_COMPLETED" />
                         <action android:name="android.intent.action.QUICKBOOT_POWERON" />
                     </intent-filter>
@@ -213,39 +279,7 @@ For Android support, modify `manifestAdditions` element so that it contains the 
                         <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
                     </intent-filter>
                 </receiver>
-                <!-- OneSignal END -->
-
-                <!-- Firebase BEGIN -->
-                <service android:name="com.google.firebase.components.ComponentDiscoveryService" >
-                    <meta-data
-                        android:name="com.google.firebase.components:com.google.firebase.analytics.connector.internal.AnalyticsConnectorRegistrar"
-                        android:value="com.google.firebase.components.ComponentRegistrar" />
-                    <meta-data
-                        android:name="com.google.firebase.components:com.google.firebase.iid.Registrar"
-                        android:value="com.google.firebase.components.ComponentRegistrar" />
-                </service>
-
-                <receiver
-                    android:name="com.google.firebase.iid.FirebaseInstanceIdReceiver"
-                    android:exported="true"
-                    android:permission="com.google.android.c2dm.permission.SEND" >
-                    <intent-filter>
-                        <action android:name="com.google.android.c2dm.intent.RECEIVE" />
-                        <category android:name="{APP-PACKAGE-NAME}" />
-                    </intent-filter>
-                </receiver>
-
-                <service
-                    android:name="com.google.firebase.iid.FirebaseInstanceIdService"
-                    android:exported="true" >
-                    <intent-filter android:priority="-500" >
-                        <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
-                    </intent-filter>
-                </service>
-                <!-- Firebase END -->
-
             </application>
-
         </manifest>
         ]]>
     </manifestAdditions>
@@ -255,7 +289,6 @@ For Android support, modify `manifestAdditions` element so that it contains the 
 In the snippet above, replace:
 * `{APP-PACKAGE-NAME}` with your app package name (value of `id` element in your AIR app descriptor). Remember it's prefixed with `air.` when packaged by AIR SDK, unless you knowingly prevent this.
 * `{ONE-SIGNAL-APP-ID}` with your OneSignal app id
-* `{GOOGLE-SENDER-ID}` with your Google Sender ID (also known as Google Project Number or Firebase Sender ID) obtained from [the tutorial](https://documentation.onesignal.com/docs/generate-a-google-server-api-key)
 
 ### Custom Android icons
 

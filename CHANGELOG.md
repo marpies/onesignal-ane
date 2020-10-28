@@ -1,3 +1,8 @@
+#### October 28, 2020 (v1.8.0)
+
+* UPDATED OneSignal SDKs for both iOS (v2.15.4) and Android (v3.15.4)
+* Migrated to AndroidX
+
 #### March 11, 2020 (v1.7.0)
 
 * UPDATED OneSignal SDKs for both iOS (v2.12.6) and Android (v3.12.6)

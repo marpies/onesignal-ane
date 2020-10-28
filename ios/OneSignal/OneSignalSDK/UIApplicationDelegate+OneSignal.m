@@ -36,6 +36,7 @@
 #import "OneSignalLocation.h"
 #import "OneSignalSelectorHelpers.h"
 #import "OneSignalHelper.h"
+#import "OSMessagingController.h"
 
 @interface OneSignal (UN_extra)
 + (void) didRegisterForRemoteNotifications:(UIApplication*)app deviceToken:(NSData*)inDeviceToken;
@@ -100,20 +101,10 @@ static NSArray* delegateSubclasses = nil;
     
     [OneSignalAppDelegate sizzlePreiOS10MethodsPhase2];
     
-    injectToProperClass(@selector(oneSignalApplicationWillResignActive:),
-                        @selector(applicationWillResignActive:), delegateSubclasses, newClass, delegateClass);
-    
-    // Required for background location
-    injectToProperClass(@selector(oneSignalApplicationDidEnterBackground:),
-                        @selector(applicationDidEnterBackground:), delegateSubclasses, newClass, delegateClass);
-    
-    injectToProperClass(@selector(oneSignalApplicationDidBecomeActive:),
-                        @selector(applicationDidBecomeActive:), delegateSubclasses, newClass, delegateClass);
-    
     // Used to track how long the app has been closed
     injectToProperClass(@selector(oneSignalApplicationWillTerminate:),
                         @selector(applicationWillTerminate:), delegateSubclasses, newClass, delegateClass);
-    
+
     [self setOneSignalDelegate:delegate];
 }
 
@@ -239,38 +230,6 @@ static NSArray* delegateSubclasses = nil;
     
     if([self respondsToSelector:@selector(oneSignalLocalNotificationOpened:notification:)])
         [self oneSignalLocalNotificationOpened:application notification:notification];
-}
-
-- (void)oneSignalApplicationWillResignActive:(UIApplication*)application {
-    [OneSignal onesignal_Log:ONE_S_LL_VERBOSE message:@"oneSignalApplicationWillResignActive"];
-    
-    if ([OneSignal app_id])
-        [OneSignalTracker onFocus:YES];
-    
-    if ([self respondsToSelector:@selector(oneSignalApplicationWillResignActive:)])
-        [self oneSignalApplicationWillResignActive:application];
-}
-
-- (void) oneSignalApplicationDidEnterBackground:(UIApplication*)application {
-    [OneSignal onesignal_Log:ONE_S_LL_VERBOSE message:@"oneSignalApplicationDidEnterBackground"];
-    
-    if ([OneSignal app_id])
-        [OneSignalLocation onfocus:NO];
-    
-    if ([self respondsToSelector:@selector(oneSignalApplicationDidEnterBackground:)])
-        [self oneSignalApplicationDidEnterBackground:application];
-}
-
-- (void)oneSignalApplicationDidBecomeActive:(UIApplication*)application {
-    [OneSignal onesignal_Log:ONE_S_LL_VERBOSE message:@"oneSignalApplicationDidBecomeActive"];
-    
-    if ([OneSignal app_id]) {
-        [OneSignalTracker onFocus:NO];
-        [OneSignalLocation onfocus:YES];
-    }
-    
-    if ([self respondsToSelector:@selector(oneSignalApplicationDidBecomeActive:)])
-        [self oneSignalApplicationDidBecomeActive:application];
 }
 
 -(void)oneSignalApplicationWillTerminate:(UIApplication *)application {

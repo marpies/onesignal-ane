@@ -76,6 +76,27 @@
     }
 }
 
+/*
+ * Part of redisplay logic
+ *
+ * If trigger key is part of message triggers, then return true, otherwise false
+ */
+- (BOOL)hasSharedTriggers:(OSInAppMessage *)message newTriggersKeys:(NSArray<NSString *> *)newTriggersKeys {
+    for (NSString *triggerKey in newTriggersKeys) {
+        for (NSArray <OSTrigger *> *andConditions in message.triggers) {
+            for (OSTrigger *trigger in andConditions) {
+                // Dynamic triggers depends on triggerId
+                // Common triggers changed by user depends on property
+                if ([triggerKey isEqual:trigger.property] || [triggerKey isEqualToString:trigger.triggerId]) {
+                    // At least one trigger has changed
+                    return YES;
+                }
+            }
+        }
+    }
+    return NO;
+}
+
 #pragma mark Private Methods
 
 - (void)timeSinceLastMessage:(NSDate *)date {
@@ -242,6 +263,10 @@
 
 - (void)dynamicTriggerFired {
     [self.delegate triggerConditionChanged];
+}
+
+- (void)dynamicTriggerCompleted:(NSString *)triggerId {
+    [self.delegate dynamicTriggerCompleted:triggerId];
 }
 
 @end

@@ -39,7 +39,7 @@ NS_ASSUME_NONNULL_BEGIN
  It is also called when the app changes trigger values
  */
 - (void)triggerConditionChanged;
-
+- (void)dynamicTriggerCompleted:(NSString *)triggerId;
 @end
 
 @interface OSTriggerController : NSObject <OSDynamicTriggerControllerDelegate>
@@ -47,6 +47,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (weak, nonatomic) id<OSTriggerControllerDelegate> delegate;
 
 - (BOOL)messageMatchesTriggers:(OSInAppMessage *)message;
+- (BOOL)hasSharedTriggers:(OSInAppMessage *)message newTriggersKeys:(NSArray<NSString *> *)newTriggersKeys;
 - (void)addTriggers:(NSDictionary<NSString *, id> *)triggers;
 - (void)removeTriggersForKeys:(NSArray<NSString *> *)keys;
 - (NSDictionary<NSString *, id> *)getTriggers;

@@ -41,14 +41,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textAppearance="@android:style/TextAppearance.StatusBar.EventContent.Title"
-            android:text="@string/os_text_view_medium_text"
+            android:text="Medium Text"
             android:paddingTop="8dp"
             android:paddingLeft="4dp"
             android:singleLine="true"
             android:ellipsize="marquee"/>
         <TextView
             android:id="@+id/os_bgimage_notif_body"
-            android:text="@string/os_text_view_small_text"
+            android:text="Small Text"
             android:layout_width="match_parent"
             android:textAppearance="@android:style/TextAppearance.StatusBar.EventContent"
             android:layout_height="0dp"

@@ -70,7 +70,7 @@
 
         <!-- unzip .aar -->
         <mkdir dir="temp/android/aar" />
-        <unzip src="../android/build/outputs/aar/android-${ANDROID_TARGET}.aar" dest="temp/android/aar" />
+        <unzip src="../android/build/outputs/aar/android.aar" dest="temp/android/aar" />
         <!-- take the .jar -->
         <unzip src="temp/android/aar/classes.jar" dest="temp/android/aar/classes" />
         <delete file="temp/android/aar/classes/classes.jar" />
@@ -82,8 +82,9 @@
         <copy todir="temp/android/com.marpies.ane.onesignal-res/">
             <fileset dir="temp/android/aar/res/"/>
         </copy>
+
         <!-- Copy OneSignal jar -->
-        <copy file="../android/libs/onesignal-3.12.6.jar" tofile="temp/android/onesignal-3.12.6.jar" overwrite="true" />
+        <copy file="../android/libs/onesignal-3.15.4.jar" tofile="temp/android/onesignal-3.15.4.jar" overwrite="true" />
         <!-- clean up -->
         <delete dir="temp/android/aar" />
         <delete dir="../android/build" />

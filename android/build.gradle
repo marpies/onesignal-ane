@@ -1,25 +1,27 @@
-
-
 buildscript {
     repositories {
         mavenCentral()
         google()
-        jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.6.0'
+        classpath 'com.android.tools.build:gradle:3.2.1'
     }
+}
+
+repositories {
+    jcenter()
+    google()
 }
 
 
 apply plugin: 'com.android.library'
 
 dependencies {
-    compile files('libs/FlashRuntimeExtensions.jar')
-    compile files('libs/onesignal-3.12.6.jar')
-    compile files('libs/android-support-v4.jar')
-    compile 'com.google.android.gms:play-services-base:9.4.0'
-    compile 'com.google.android.gms:play-services-basement:9.4.0'
+    implementation files('libs/FlashRuntimeExtensions.jar')
+    implementation files('libs/onesignal-3.15.4.jar')
+    implementation 'com.google.android.gms:play-services-base:17.4.0'
+    implementation 'com.google.android.gms:play-services-basement:17.4.0'
+    implementation 'androidx.core:core:1.2.0'
 }
 
 repositories {
